@@ -1,5 +1,8 @@
-from . import base as base, declarations as declarations, errors as errors
 from _typeshed import Incomplete
+
+from . import base as base
+from . import declarations as declarations
+from . import errors as errors
 
 logger: Incomplete
 DEFAULT_DB_ALIAS: str

@@ -1,6 +1,8 @@
-from . import declarations as declarations
-from _typeshed import Incomplete
 from collections.abc import Generator
+
+from _typeshed import Incomplete
+
+from . import declarations as declarations
 
 class Faker(declarations.BaseDeclaration):
     provider: Incomplete

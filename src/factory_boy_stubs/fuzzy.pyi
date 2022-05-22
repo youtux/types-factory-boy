@@ -1,5 +1,7 @@
-from . import declarations as declarations, random as random
 from _typeshed import Incomplete
+
+from . import declarations as declarations
+from . import random as random
 
 random_seed_warning: str
 
@@ -17,7 +19,9 @@ class FuzzyText(BaseFuzzyAttribute):
     suffix: Incomplete
     length: Incomplete
     chars: Incomplete
-    def __init__(self, prefix: str = ..., length: int = ..., suffix: str = ..., chars=...) -> None: ...
+    def __init__(
+        self, prefix: str = ..., length: int = ..., suffix: str = ..., chars=...
+    ) -> None: ...
     def fuzz(self): ...
 
 class FuzzyChoice(BaseFuzzyAttribute):
@@ -38,14 +42,18 @@ class FuzzyDecimal(BaseFuzzyAttribute):
     low: Incomplete
     high: Incomplete
     precision: Incomplete
-    def __init__(self, low, high: Incomplete | None = ..., precision: int = ...) -> None: ...
+    def __init__(
+        self, low, high: Incomplete | None = ..., precision: int = ...
+    ) -> None: ...
     def fuzz(self): ...
 
 class FuzzyFloat(BaseFuzzyAttribute):
     low: Incomplete
     high: Incomplete
     precision: Incomplete
-    def __init__(self, low, high: Incomplete | None = ..., precision: int = ...) -> None: ...
+    def __init__(
+        self, low, high: Incomplete | None = ..., precision: int = ...
+    ) -> None: ...
     def fuzz(self): ...
 
 class FuzzyDate(BaseFuzzyAttribute):
@@ -64,7 +72,18 @@ class BaseFuzzyDateTime(BaseFuzzyAttribute):
     force_minute: Incomplete
     force_second: Incomplete
     force_microsecond: Incomplete
-    def __init__(self, start_dt, end_dt: Incomplete | None = ..., force_year: Incomplete | None = ..., force_month: Incomplete | None = ..., force_day: Incomplete | None = ..., force_hour: Incomplete | None = ..., force_minute: Incomplete | None = ..., force_second: Incomplete | None = ..., force_microsecond: Incomplete | None = ...) -> None: ...
+    def __init__(
+        self,
+        start_dt,
+        end_dt: Incomplete | None = ...,
+        force_year: Incomplete | None = ...,
+        force_month: Incomplete | None = ...,
+        force_day: Incomplete | None = ...,
+        force_hour: Incomplete | None = ...,
+        force_minute: Incomplete | None = ...,
+        force_second: Incomplete | None = ...,
+        force_microsecond: Incomplete | None = ...,
+    ) -> None: ...
     def fuzz(self): ...
 
 class FuzzyNaiveDateTime(BaseFuzzyDateTime): ...
