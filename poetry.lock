@@ -91,14 +91,14 @@ python-versions = ">=3.6"
 name = "typing-extensions"
 version = "4.2.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "1d52917a8fd98a965b42a19078e8ec8e48bf2e9faf2474d3bc89b5be0cae70b7"
+content-hash = "b6fdf7d72af02919e0375639980c8a39c501a95ac61b0197bc841b719c1433c9"
 
 [metadata.files]
 factory-boy = [
