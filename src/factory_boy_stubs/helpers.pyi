@@ -2,8 +2,7 @@ from collections.abc import Generator
 
 from _typeshed import Incomplete
 
-from . import base as base
-from . import declarations as declarations
+from . import base, declarations
 
 def debug(
     logger: str = ..., stream: Incomplete | None = ...

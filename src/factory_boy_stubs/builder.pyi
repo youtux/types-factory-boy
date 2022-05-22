@@ -3,9 +3,7 @@ from typing import NamedTuple
 
 from _typeshed import Incomplete
 
-from . import enums as enums
-from . import errors as errors
-from . import utils as utils
+from . import enums, errors, utils
 
 class DeclarationWithContext(NamedTuple):
     name: Incomplete

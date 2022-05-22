@@ -2,7 +2,7 @@ from collections.abc import Generator
 
 from _typeshed import Incomplete
 
-from . import declarations as declarations
+from . import declarations
 
 class Faker(declarations.BaseDeclaration):
     provider: Incomplete

@@ -1,10 +1,6 @@
 from _typeshed import Incomplete
 
-from . import builder as builder
-from . import declarations as declarations
-from . import enums as enums
-from . import errors as errors
-from . import utils as utils
+from . import builder, declarations, enums, errors, utils
 
 logger: Incomplete
 

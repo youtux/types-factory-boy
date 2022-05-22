@@ -1,7 +1,6 @@
 from _typeshed import Incomplete
 
-from . import declarations as declarations
-from . import random as random
+from . import declarations, random
 
 random_seed_warning: str
 

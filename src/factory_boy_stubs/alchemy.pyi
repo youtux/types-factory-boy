@@ -1,7 +1,6 @@
 from _typeshed import Incomplete
 
-from . import base as base
-from . import errors as errors
+from . import base, errors
 
 SESSION_PERSISTENCE_COMMIT: str
 SESSION_PERSISTENCE_FLUSH: str

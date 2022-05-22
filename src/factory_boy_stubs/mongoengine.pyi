@@ -1,4 +1,4 @@
-from . import base as base
+from . import base
 
 class MongoEngineFactory(base.Factory):
     class Meta:
