@@ -3,6 +3,7 @@ name = "factory_boy-stubs"
 version = "0.1.0"
 description = ""
 authors = ["Alessio Bogon <youtux@gmail.com>"]
+packages = [{ include = "factory-stubs", from="src" }]
 
 [tool.poetry.dependencies]
 python = "^3.7"
