@@ -56,7 +56,7 @@ class BuildStep:
         factory: base.BaseFactory,
         declarations: DeclarationSet,
         force_sequence: int | None = ...,
-    ): ...
+    ) -> Any: ...
 
 class StepBuilder:
     factory_meta: base.FactoryOptions
@@ -73,7 +73,7 @@ class StepBuilder:
         self,
         parent_step: BuildStep | None = ...,
         force_sequence: int | None = ...,
-    ): ...
+    ) -> Any: ...
     def recurse(
         self, factory_meta: base.FactoryOptions, extras: dict[str, Any]
     ) -> Self: ...
