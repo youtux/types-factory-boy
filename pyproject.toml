@@ -7,10 +7,10 @@ packages = [{ include = "factory-stubs", from="src" }]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-typing-extensions = {version = "^4.2.0", python = "<3.11"}
+typing-extensions = { version = "^4.2.0", python = "<3.11" }
+factory-boy = ">=3.2.0"
 
 [tool.poetry.dev-dependencies]
-factory-boy = "^3.2.1"
 mypy = "^0.950"
 
 [build-system]
