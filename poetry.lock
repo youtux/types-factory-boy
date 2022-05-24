@@ -98,7 +98,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "ccd183c375952e209a067629881fb3c16dffc82b67d2924f70ffdef8f15b6938"
+content-hash = "8877438269756b9190da8277e90e14df827a6e8f7c4dc8084fe4ae80821d0c8e"
 
 [metadata.files]
 factory-boy = [

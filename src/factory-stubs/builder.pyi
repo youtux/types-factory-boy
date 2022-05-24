@@ -1,4 +1,3 @@
-import sys
 from typing import (
     Any,
     Generic,
@@ -11,13 +10,7 @@ from typing import (
     TypeVar,
 )
 
-from . import base, enums
-
-# TODO: Don't use Self, use the old workaround
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
+from . import base
 
 T = TypeVar("T")
 
@@ -28,6 +21,8 @@ class DeclarationWithContext(NamedTuple):
     declaration: Any
     context: dict[str, Any]
 
+TDeclarationSet = TypeVar("TDeclarationSet", bound=DeclarationSet)
+
 class DeclarationSet:
     declarations: dict[str, Any]
     contexts: dict[str, dict[str, Any]]
@@ -36,7 +31,7 @@ class DeclarationSet:
     def split(cls, entry: str) -> tuple[str, str | None]: ...
     @classmethod
     def join(cls, root: str, subkey: str | None) -> str: ...
-    def copy(self) -> Self: ...
+    def copy(self) -> TDeclarationSet: ...
     def update(self, values: Mapping[str, Any]) -> None: ...
     def filter(self, entries: Iterable[str]) -> list[str]: ...
     def sorted(self) -> list[str]: ...
@@ -52,14 +47,16 @@ def parse_declarations(
     base_post: DeclarationSet | None = ...,
 ) -> tuple[DeclarationSet, DeclarationSet]: ...
 
+TBuildStep = TypeVar("TBuildStep", bound=BuildStep)
+
 class BuildStep:
     builder: StepBuilder
     sequence: int
     attributes: dict[str, Any]
-    parent_step: Self
+    parent_step: TBuildStep
     stub: Resolver
     def __init__(
-        self, builder: StepBuilder, sequence: int, parent_step: Self | None = ...
+        self, builder: StepBuilder, sequence: int, parent_step: TBuildStep | None = ...
     ) -> None: ...
     def resolve(self, declarations: DeclarationSet) -> None: ...
     @property
@@ -70,6 +67,8 @@ class BuildStep:
         declarations: DeclarationSet,
         force_sequence: int | None = ...,
     ) -> Any: ...
+
+TStepBuilder = TypeVar("TStepBuilder", bound=StepBuilder)
 
 class StepBuilder(Generic[T]):
     factory_meta: base.FactoryOptions[T]
@@ -89,7 +88,7 @@ class StepBuilder(Generic[T]):
     ) -> T | base.StubObject: ...
     def recurse(
         self, factory_meta: base.FactoryOptions[T], extras: dict[str, Any]
-    ) -> Self: ...
+    ) -> TStepBuilder[T]: ...
 
 class Resolver:
     def __init__(
