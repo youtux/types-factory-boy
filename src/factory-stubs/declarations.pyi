@@ -6,12 +6,12 @@ from typing import (
     Iterable,
     Literal,
     Mapping,
+    NamedTuple,
     Tuple,
     Type,
     TypeVar,
 )
 
-from _typeshed import Incomplete
 from factory.builder import BuildStep, Resolver
 
 from . import base, utils
@@ -20,6 +20,8 @@ T = TypeVar("T")
 V = TypeVar("V")
 KT = TypeVar("KT")
 VT = TypeVar("VT")
+
+TFactory = TypeVar("TFactory", bound=base.Factory)
 
 logger: logging.Logger
 
@@ -109,20 +111,20 @@ class ContainerAttribute(Generic[T], BaseDeclaration):
 class ParameteredAttribute(BaseDeclaration):
     def generate(self, step: BuildStep, params: dict[str, Any]) -> Any: ...
 
-class _FactoryWrapper:
-    factory: Type[base.Factory] | None
+class _FactoryWrapper(Generic[TFactory]):
+    factory: Type[TFactory] | None
     module: str
-    def __init__(self, factory_or_path: str | Type[base.Factory]) -> None: ...
-    def get(self) -> Type[base.Factory]: ...
+    def __init__(self, factory_or_path: str | Type[TFactory]) -> None: ...
+    def get(self) -> Type[TFactory]: ...
 
-class SubFactory(BaseDeclaration):
+class SubFactory(Generic[TFactory], BaseDeclaration):
     FORCE_SEQUENCE: bool
     UNROLL_CONTEXT_BEFORE_EVALUATION: bool
-    factory_wrapper: _FactoryWrapper
-    def __init__(self, factory: str | Type[base.Factory], **kwargs: Any) -> None: ...
-    def get_factory(self) -> Type[base.Factory]: ...
+    factory_wrapper: _FactoryWrapper[TFactory]
+    def __init__(self, factory: str | Type[TFactory], **kwargs: Any) -> None: ...
+    def get_factory(self) -> Type[TFactory]: ...
 
-class Dict(Mapping[KT, VT], SubFactory):
+class Dict(Mapping[KT, VT], SubFactory[base.DictFactory[KT, VT]]):
     FORCE_SEQUENCE: bool
     def __init__(
         self,
@@ -130,7 +132,7 @@ class Dict(Mapping[KT, VT], SubFactory):
         dict_factory: str | Type[base.Factory] = ...,
     ) -> None: ...
 
-class List(Generic[T], SubFactory):
+class List(Generic[T], SubFactory[base.ListFactory[T]]):
     FORCE_SEQUENCE: bool
     def __init__(
         self, params: Iterable[T], list_factory: str | Type[base.Factory] = ...
@@ -143,9 +145,8 @@ SKIP: Skip
 
 class Maybe(BaseDeclaration):
     decider: SelfAttribute
-    yes: Incomplete
-    no: Incomplete
-    FACTORY_BUILDER_PHASE: Incomplete
+    yes: Any
+    no: Any
     def __init__(
         self,
         decider: SelfAttribute | str,
@@ -153,7 +154,7 @@ class Maybe(BaseDeclaration):
         no_declaration: Skip | Any = ...,
     ) -> None: ...
     def evaluate_post(
-        self, instance: Resolver, step: BuildStep, overrides: dict[str, Any]
+        self, instance: Any, step: BuildStep, overrides: dict[str, Any]
     ) -> Any: ...
     def evaluate_pre(
         self, instance: Resolver, step: BuildStep, overrides: dict[str, Any]
@@ -174,52 +175,63 @@ class SimpleParameter(Generic[T], Parameter):
     @classmethod
     def wrap(cls, value: utils.OrderedBase | Parameter | Any) -> utils.OrderedBase: ...
 
-# TODO: CONTINUE FROM HERE
-
 class Trait(Parameter):
-    overrides: Incomplete
-    def __init__(self, **overrides) -> None: ...
-    def as_declarations(self, field_name, declarations): ...
-    def get_revdeps(self, parameters): ...
+    overrides: dict[str, Any]
+    def __init__(self, **overrides: Any) -> None: ...
+    def as_declarations(
+        self, field_name: str, declarations: dict[str, Any]
+    ) -> dict[str, Maybe]: ...
 
-class PostGenerationContext(T.NamedTuple):
+class PostGenerationContext(NamedTuple):
     value_provided: bool
-    value: T.Any
-    extra: T.Dict[str, T.Any]
+    value: Any
+    extra: dict[str, Any]
 
 class PostGenerationDeclaration(BaseDeclaration):
-    FACTORY_BUILDER_PHASE: Incomplete
-    def evaluate_post(self, instance, step, overrides): ...
-    def call(self, instance, step, context) -> None: ...
+    def evaluate_post(
+        self, instance: Any, step: BuildStep, overrides: dict[str, Any]
+    ) -> Any: ...
+    def call(
+        self, instance: Any, step: BuildStep, context: PostGenerationContext
+    ) -> Any: ...
 
 class PostGeneration(PostGenerationDeclaration):
-    function: Incomplete
-    def __init__(self, function) -> None: ...
-    def call(self, instance, step, context): ...
+    function: Callable[[Any, bool, Any, ...], Any]
+    def __init__(self, function: Callable[[Any, bool, Any, ...], Any]) -> None: ...
+    def call(
+        self, instance: Any, step: BuildStep, context: PostGenerationContext
+    ) -> Any: ...
 
-class RelatedFactory(PostGenerationDeclaration):
+class RelatedFactory(Generic[TFactory], PostGenerationDeclaration):
     UNROLL_CONTEXT_BEFORE_EVALUATION: bool
-    name: Incomplete
-    defaults: Incomplete
-    factory_wrapper: Incomplete
+    name: str
+    defaults: dict[str, Any]
+    factory_wrapper: _FactoryWrapper[TFactory]
     def __init__(
-        self, factory, factory_related_name: str = ..., **defaults
+        self,
+        factory: str | Type[TFactory],
+        factory_related_name: str = ...,
+        **defaults: Any,
     ) -> None: ...
-    def get_factory(self): ...
-    def call(self, instance, step, context): ...
+    def get_factory(self) -> Type[TFactory]: ...
 
-class RelatedFactoryList(RelatedFactory):
-    size: Incomplete
+class RelatedFactoryList(Generic[TFactory], RelatedFactory[TFactory]):
+    size: int | Callable[[], int]
     def __init__(
-        self, factory, factory_related_name: str = ..., size: int = ..., **defaults
+        self,
+        factory: str | Type[TFactory],
+        factory_related_name: str = ...,
+        size: int | Callable[[], int] = ...,
+        **defaults: Any,
     ) -> None: ...
-    def call(self, instance, step, context): ...
+    def call(
+        self, instance: Any, step: BuildStep, context: PostGenerationContext
+    ) -> list[Any]: ...
 
 class NotProvided: ...
 
 class PostGenerationMethodCall(PostGenerationDeclaration):
-    method_name: Incomplete
-    method_arg: Incomplete
-    method_kwargs: Incomplete
-    def __init__(self, method_name, *args, **kwargs) -> None: ...
-    def call(self, instance, step, context): ...
+    method_name: str
+    method_arg: Any
+    method_kwargs: dict[str, Any]
+    def __init__(self, method_name: str, *args: Any, **kwargs: Any) -> None: ...
