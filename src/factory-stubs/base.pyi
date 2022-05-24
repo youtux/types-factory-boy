@@ -1,125 +1,202 @@
-from _typeshed import Incomplete
+import logging
+from typing import (
+    Any,
+    Callable,
+    Generic,
+    Iterable,
+    List,
+    Literal,
+    Mapping,
+    NoReturn,
+    Tuple,
+    Type,
+    TypeAlias,
+    TypeVar,
+)
 
-from . import builder, declarations, enums, errors, utils
+from . import builder, declarations, errors
 
-logger: Incomplete
+T = TypeVar("T")
+KT = TypeVar("KT")
+VT = TypeVar("VT")
+_Strategy: TypeAlias = Literal["build", "create", "stub"]
 
-def get_factory_bases(bases): ...
-def resolve_attribute(name, bases, default: Incomplete | None = ...): ...
+logger: logging.Logger
 
-class FactoryMetaClass(type):
-    def __call__(cls, **kwargs): ...
-    def __new__(mcs, class_name, bases, attrs): ...
+def get_factory_bases(bases: Iterable[Type]) -> List[Type[BaseFactory]]: ...
+def resolve_attribute(
+    name: str, bases: Iterable[Any], default: Any | None = ...
+) -> Any: ...
+
+# TODO: Add a MetaProtocol, and use for `FactoryOptions.contribute_to_class... meta`
+
+class FactoryMetaClass(Generic[T], type):
+    def __call__(cls, **kwargs: Any) -> StubObject | T: ...
+    def __new__(
+        mcs, class_name: str, bases: Tuple[type], attrs: dict[str, Any]
+    ) -> type: ...
 
 class BaseMeta:
     abstract: bool
-    strategy: Incomplete
+    strategy: _Strategy
 
 class OptionDefault:
-    name: Incomplete
-    value: Incomplete
-    inherit: Incomplete
-    checker: Incomplete
+    name: str
+    value: Any
+    inherit: bool
+    checker: Callable[[Type, Any], Any]
     def __init__(
-        self, name, value, inherit: bool = ..., checker: Incomplete | None = ...
+        self,
+        name,
+        value,
+        inherit: bool = ...,
+        checker: Callable[[Type, Any], Any] | None = ...,
     ) -> None: ...
-    def apply(self, meta, base_meta): ...
+    def apply(self, meta: Type, base_meta: FactoryOptions) -> Any: ...
 
-class FactoryOptions:
-    factory: Incomplete
-    base_factory: Incomplete
-    base_declarations: Incomplete
-    parameters: Incomplete
-    parameters_dependencies: Incomplete
-    pre_declarations: Incomplete
-    post_declarations: Incomplete
-    counter_reference: Incomplete
+# Workaround for mypy until it supports typing.Self
+TFactoryOptions = TypeVar("TFactoryOptions", bound=FactoryOptions)
+
+class FactoryOptions(Generic[T]):
+    factory: Type[Factory[T]] | None
+    base_factory: Type[BaseFactory] | None
+    base_declarations: dict[str, Any]
+    parameters: dict[str, declarations.Parameter]
+    parameters_dependencies: dict[str, Any]
+    pre_declarations: builder.DeclarationSet
+    post_declarations: builder.DeclarationSet
+    counter_reference: TFactoryOptions[T] | None
+    # TODO: self.model is not assigned at __init__, open an issue upstream
+    model: Any | None
+
     def __init__(self) -> None: ...
     @property
-    def declarations(self): ...
-    model: Incomplete
-    abstract: bool
+    def declarations(self) -> dict[str, Any]: ...
     def contribute_to_class(
         self,
-        factory,
-        meta: Incomplete | None = ...,
-        base_meta: Incomplete | None = ...,
-        base_factory: Incomplete | None = ...,
-        params: Incomplete | None = ...,
+        factory: Type[Factory[T]],
+        meta: Type | None = ...,
+        base_meta: Any | None = ...,
+        base_factory: Type[BaseFactory] | None = ...,
+        params: Mapping[str, Any] | None = ...,
     ): ...
-    def next_sequence(self): ...
-    def reset_sequence(
-        self, value: Incomplete | None = ..., force: bool = ...
+    def next_sequence(self) -> int: ...
+    def reset_sequence(self, value: int | None = ..., force: bool = ...) -> None: ...
+    def prepare_arguments(
+        self, attributes: Mapping[str, Any]
+    ) -> Tuple[Tuple[Any, ...], dict[str, Any]]: ...
+    def instantiate(
+        self, step: builder.BuildStep, args: Type[Any], kwargs: Mapping[str, Any]
+    ) -> T | StubObject: ...
+    def use_postgeneration_results(
+        self, step: builder.BuildStep, instance: T | StubObject, results: dict[str, Any]
     ) -> None: ...
-    def prepare_arguments(self, attributes): ...
-    def instantiate(self, step, args, kwargs): ...
-    def use_postgeneration_results(self, step, instance, results) -> None: ...
-    def get_model_class(self): ...
+    def get_model_class(self) -> Factory[T]: ...
 
 class _Counter:
-    seq: Incomplete
-    def __init__(self, seq) -> None: ...
-    def next(self): ...
+    seq: int
+    def __init__(self, seq: int) -> None: ...
+    def next(self) -> int: ...
     def reset(self, next_value: int = ...) -> None: ...
 
-class BaseFactory:
-    UnknownStrategy: Incomplete
-    UnsupportedStrategy: Incomplete
-    def __new__(cls, *args, **kwargs) -> None: ...
+class BaseFactory(Generic[T]):
+    UnknownStrategy: Type[errors.UnknownStrategy]
+    UnsupportedStrategy: Type[errors.UnsupportedStrategy]
+    _meta: FactoryOptions[T]
+    def __new__(cls, *args: Any, **kwargs: Any) -> NoReturn: ...
     @classmethod
-    def reset_sequence(
-        cls, value: Incomplete | None = ..., force: bool = ...
+    def reset_sequence(cls, value: int | None = ..., force: bool = ...) -> None: ...
+    @classmethod
+    def _setup_next_sequence(cls) -> int: ...
+    @classmethod
+    def _adjust_kwargs(cls, **kwargs: Any) -> dict[str, Any]: ...
+    @classmethod
+    def _generate(
+        cls, strategy: _Strategy, params: dict[str, Any]
+    ) -> StubObject | T: ...
+    @classmethod
+    def _after_postgeneration(
+        cls,
+        instance: T | StubObject,
+        create: bool,
+        results: dict[str, Any] | None = ...,
     ) -> None: ...
     @classmethod
-    def build(cls, **kwargs): ...
+    def _build(cls, model_class: Type[T], *args: Any, **kwargs: Any) -> T: ...
     @classmethod
-    def build_batch(cls, size, **kwargs): ...
+    def _create(cls, model_class: Type[T], *args: Any, **kwargs: Any) -> T: ...
     @classmethod
-    def create(cls, **kwargs): ...
+    def build(cls, **kwargs: Any) -> T: ...
     @classmethod
-    def create_batch(cls, size, **kwargs): ...
+    def build_batch(cls, size: int, **kwargs: Any) -> list[T]: ...
     @classmethod
-    def stub(cls, **kwargs): ...
+    def create(cls, **kwargs: Any) -> T: ...
     @classmethod
-    def stub_batch(cls, size, **kwargs): ...
+    def create_batch(cls, size, **kwargs: Any) -> list[T]: ...
     @classmethod
-    def generate(cls, strategy, **kwargs): ...
+    def stub(cls, **kwargs: Any) -> StubObject: ...
     @classmethod
-    def generate_batch(cls, strategy, size, **kwargs): ...
-    @classmethod
-    def simple_generate(cls, create, **kwargs): ...
-    @classmethod
-    def simple_generate_batch(cls, create, size, **kwargs): ...
+    def stub_batch(cls, size: int, **kwargs: Any) -> list[StubObject]: ...
 
-class Factory(BaseFactory, metaclass=FactoryMetaClass):
+    # TODO: We need an overload here
+    @classmethod
+    def generate(cls, strategy: _Strategy, **kwargs: Any) -> StubObject | T: ...
+
+    # TODO: We need an overload here
+    @classmethod
+    def generate_batch(
+        cls, strategy: _Strategy, size: int, **kwargs: Any
+    ) -> list[StubObject | T]: ...
+    @classmethod
+    def simple_generate(cls, create: bool, **kwargs: Any) -> T: ...
+    @classmethod
+    def simple_generate_batch(
+        cls, create: bool, size: int, **kwargs: Any
+    ) -> list[T]: ...
+
+class Factory(Generic[T], BaseFactory, metaclass=FactoryMetaClass):
+    AssociatedClassError: Type[errors.AssociatedClassError]
+
     class Meta(BaseMeta): ...
 
 class StubObject:
-    def __init__(self, **kwargs) -> None: ...
+    def __init__(self, **kwargs: Any) -> None: ...
+
+TStubObject = TypeVar("TStubObject", bound=StubObject)
 
 class StubFactory(Factory):
     class Meta:
-        strategy: Incomplete
-        model: Incomplete
+        strategy: Literal["stub"]
+        model: Type[StubObject]
     @classmethod
-    def build(cls, **kwargs): ...
+    def build(cls, **kwargs: Any) -> TStubObject: ...
     @classmethod
-    def create(cls, **kwargs) -> None: ...
+    def create(cls, **kwargs: Any) -> NoReturn: ...
 
-class BaseDictFactory(Factory):
+class BaseDictFactory(Generic[T], Factory[T]):
     class Meta:
         abstract: bool
+    @classmethod
+    def _build(cls, model_class: Type[T], **kwargs: Any) -> T: ...
+    @classmethod
+    def _create(cls, model_class: Type[T], **kwargs: Any) -> T: ...
 
-class DictFactory(BaseDictFactory):
+class DictFactory(Generic[KT, VT], BaseDictFactory[dict[KT, VT]]):
     class Meta:
-        model: Incomplete
+        model: Type[dict[KT, VT]]
 
-class BaseListFactory(Factory):
+class BaseListFactory(Generic[T], Factory[Iterable[T]]):
     class Meta:
         abstract: bool
+    @classmethod
+    def _build(cls, model_class: Type[Iterable[T]], **kwargs: T) -> Iterable[T]: ...
 
-class ListFactory(BaseListFactory):
+class ListFactory(Generic[T], BaseListFactory[T]):
     class Meta:
-        model: Incomplete
+        model: list[T]
 
-def use_strategy(new_strategy): ...
+TBaseFactoryType = TypeVar("TBaseFactoryType", bound=Type[BaseFactory])
+
+def use_strategy(
+    new_strategy: _Strategy,
+) -> Callable[[TBaseFactoryType], Type[TBaseFactoryType]]: ...

@@ -1,12 +1,25 @@
 import sys
-from typing import Any, Iterable, Iterator, Literal, Mapping, NamedTuple, TypeAlias
+from typing import (
+    Any,
+    Generic,
+    Iterable,
+    Iterator,
+    Literal,
+    Mapping,
+    NamedTuple,
+    TypeAlias,
+    TypeVar,
+)
 
 from . import base, enums
 
+# TODO: Don't use Self, use the old workaround
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
+
+T = TypeVar("T")
 
 StrategyType: TypeAlias = Literal["build", "create", "stub"]
 
@@ -58,8 +71,8 @@ class BuildStep:
         force_sequence: int | None = ...,
     ) -> Any: ...
 
-class StepBuilder:
-    factory_meta: base.FactoryOptions
+class StepBuilder(Generic[T]):
+    factory_meta: base.FactoryOptions[T]
     strategy: StrategyType
     extras: dict[str, Any]
     force_init_sequence: int | None
@@ -73,9 +86,9 @@ class StepBuilder:
         self,
         parent_step: BuildStep | None = ...,
         force_sequence: int | None = ...,
-    ) -> Any: ...
+    ) -> T | base.StubObject: ...
     def recurse(
-        self, factory_meta: base.FactoryOptions, extras: dict[str, Any]
+        self, factory_meta: base.FactoryOptions[T], extras: dict[str, Any]
     ) -> Self: ...
 
 class Resolver:
