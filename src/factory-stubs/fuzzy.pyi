@@ -1,89 +1,99 @@
-from _typeshed import Incomplete
+import datetime
+import decimal
+from typing import Any, Callable, Generic, Iterable, Sequence, TypeVar
 
-from . import declarations, random
+from . import declarations
 
-random_seed_warning: str
+T = TypeVar("T")
+V = TypeVar("V")
 
 class BaseFuzzyAttribute(declarations.BaseDeclaration):
-    def fuzz(self) -> None: ...
-    def evaluate(self, instance, step, extra): ...
+    def fuzz(self) -> Any: ...
 
-class FuzzyAttribute(BaseFuzzyAttribute):
-    fuzzer: Incomplete
-    def __init__(self, fuzzer) -> None: ...
-    def fuzz(self): ...
+class FuzzyAttribute(Generic[T], BaseFuzzyAttribute):
+    fuzzer: Callable[[], T]
+    def __init__(self, fuzzer: Callable[[], T]) -> None: ...
+    def fuzz(self) -> T: ...
 
 class FuzzyText(BaseFuzzyAttribute):
-    prefix: Incomplete
-    suffix: Incomplete
-    length: Incomplete
-    chars: Incomplete
-    def __init__(
-        self, prefix: str = ..., length: int = ..., suffix: str = ..., chars=...
-    ) -> None: ...
-    def fuzz(self): ...
-
-class FuzzyChoice(BaseFuzzyAttribute):
-    choices: Incomplete
-    choices_generator: Incomplete
-    getter: Incomplete
-    def __init__(self, choices, getter: Incomplete | None = ...) -> None: ...
-    def fuzz(self): ...
-
-class FuzzyInteger(BaseFuzzyAttribute):
-    low: Incomplete
-    high: Incomplete
-    step: Incomplete
-    def __init__(self, low, high: Incomplete | None = ..., step: int = ...) -> None: ...
-    def fuzz(self): ...
-
-class FuzzyDecimal(BaseFuzzyAttribute):
-    low: Incomplete
-    high: Incomplete
-    precision: Incomplete
-    def __init__(
-        self, low, high: Incomplete | None = ..., precision: int = ...
-    ) -> None: ...
-    def fuzz(self): ...
-
-class FuzzyFloat(BaseFuzzyAttribute):
-    low: Incomplete
-    high: Incomplete
-    precision: Incomplete
-    def __init__(
-        self, low, high: Incomplete | None = ..., precision: int = ...
-    ) -> None: ...
-    def fuzz(self): ...
-
-class FuzzyDate(BaseFuzzyAttribute):
-    start_date: Incomplete
-    end_date: Incomplete
-    def __init__(self, start_date, end_date: Incomplete | None = ...) -> None: ...
-    def fuzz(self): ...
-
-class BaseFuzzyDateTime(BaseFuzzyAttribute):
-    start_dt: Incomplete
-    end_dt: Incomplete
-    force_year: Incomplete
-    force_month: Incomplete
-    force_day: Incomplete
-    force_hour: Incomplete
-    force_minute: Incomplete
-    force_second: Incomplete
-    force_microsecond: Incomplete
+    prefix: str
+    suffix: str
+    length: int
+    chars: Sequence[str]
     def __init__(
         self,
-        start_dt,
-        end_dt: Incomplete | None = ...,
-        force_year: Incomplete | None = ...,
-        force_month: Incomplete | None = ...,
-        force_day: Incomplete | None = ...,
-        force_hour: Incomplete | None = ...,
-        force_minute: Incomplete | None = ...,
-        force_second: Incomplete | None = ...,
-        force_microsecond: Incomplete | None = ...,
+        prefix: str = ...,
+        length: int = ...,
+        suffix: str = ...,
+        chars: Iterable[str] = ...,
     ) -> None: ...
-    def fuzz(self): ...
+    def fuzz(self) -> str: ...
+
+class FuzzyChoice(Generic[T, V], BaseFuzzyAttribute):
+    choices: list[T] | None
+    choices_generator: Iterable[T]
+    getter: Callable[[T], V] | None
+    def __init__(
+        self, choices: Iterable[T], getter: Callable[[T], V] | None = ...
+    ) -> None: ...
+    def fuzz(self) -> T | V: ...
+
+class FuzzyInteger(BaseFuzzyAttribute):
+    low: int
+    high: int
+    step: int
+    def __init__(self, low: int, high: int | None = ..., step: int = ...) -> None: ...
+    def fuzz(self) -> int: ...
+
+class FuzzyDecimal(BaseFuzzyAttribute):
+    low: float
+    high: float
+    precision: int
+    def __init__(
+        self, low: float, high: float | None = ..., precision: int = ...
+    ) -> None: ...
+    def fuzz(self) -> decimal.Decimal: ...
+
+class FuzzyFloat(BaseFuzzyAttribute):
+    low: float
+    high: float
+    precision: int
+    def __init__(
+        self, low: float, high: float | None = ..., precision: int = ...
+    ) -> None: ...
+    def fuzz(self) -> float: ...
+
+class FuzzyDate(BaseFuzzyAttribute):
+    start_date: int
+    end_date: int
+    def __init__(
+        self, start_date: datetime.date, end_date: datetime.date | None = ...
+    ) -> None: ...
+    def fuzz(self) -> datetime.date: ...
+
+class BaseFuzzyDateTime(BaseFuzzyAttribute):
+    start_dt: datetime.datetime
+    end_dt: datetime.datetime
+    force_year: int | None
+    force_month: int | None
+    force_day: int | None
+    force_hour: int | None
+    force_minute: int | None
+    force_second: int | None
+    force_microsecond: int | None
+    def __init__(
+        self,
+        start_dt: datetime.datetime,
+        end_dt: datetime.datetime | None = ...,
+        force_year: int | None = ...,
+        force_month: int | None = ...,
+        force_day: int | None = ...,
+        force_hour: int | None = ...,
+        force_minute: int | None = ...,
+        force_second: int | None = ...,
+        force_microsecond: int | None = ...,
+    ) -> None: ...
+    def fuzz(self) -> datetime.datetime: ...
 
 class FuzzyNaiveDateTime(BaseFuzzyDateTime): ...
 class FuzzyDateTime(BaseFuzzyDateTime): ...
