@@ -6,13 +6,12 @@ from typing import (
     Literal,
     TextIO,
     Type,
-    TypeAlias,
     TypeVar,
+    overload,
 )
 
 T = TypeVar("T")
 V = TypeVar("V")
-_Strategy: TypeAlias = Literal["build", "create", "stub"]
 
 from . import base, builder, declarations
 
@@ -24,14 +23,18 @@ def create(klass: T, **kwargs: Any) -> T: ...
 def create_batch(klass: T, size: int, **kwargs: Any) -> list[T]: ...
 def stub(klass: T, **kwargs: Any) -> base.StubObject: ...
 def stub_batch(klass: T, size: int, **kwargs: Any) -> base.StubObject: ...
-
-# TODO: overload here
-def generate(klass: T, strategy: _Strategy, **kwargs: Any) -> T | base.StubObject: ...
-
-# TODO: overload here
+@overload
+def generate(klass: T, strategy: Literal["build", "create"], **kwargs: Any) -> T: ...
+@overload
+def generate(klass: T, strategy: Literal["stub"], **kwargs: Any) -> base.StubObject: ...
+@overload
 def generate_batch(
-    klass: T, strategy: _Strategy, size: int, **kwargs: Any
-) -> list[T] | list[base.StubObject]: ...
+    klass: T, strategy: Literal["build", "create"], size: int, **kwargs: Any
+) -> list[T]: ...
+@overload
+def generate_batch(
+    klass: T, strategy: Literal["stub"], size: int, **kwargs: Any
+) -> list[base.StubObject]: ...
 def simple_generate(klass: T, create: bool, **kwargs: Any) -> T: ...
 def simple_generate_batch(
     klass: T, create: bool, size: int, **kwargs: Any

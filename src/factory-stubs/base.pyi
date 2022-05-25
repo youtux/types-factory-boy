@@ -12,6 +12,7 @@ from typing import (
     Type,
     TypeAlias,
     TypeVar,
+    overload,
 )
 
 from . import builder, declarations, errors
@@ -66,8 +67,6 @@ class FactoryOptions(Generic[T]):
     pre_declarations: builder.DeclarationSet
     post_declarations: builder.DeclarationSet
     counter_reference: TFactoryOptions[T] | None
-    # TODO: self.model is not assigned at __init__, open an issue upstream
-    model: Any | None
 
     def __init__(self) -> None: ...
     @property
@@ -110,10 +109,16 @@ class BaseFactory(Generic[T]):
     def _setup_next_sequence(cls) -> int: ...
     @classmethod
     def _adjust_kwargs(cls, **kwargs: Any) -> dict[str, Any]: ...
+    @overload
     @classmethod
     def _generate(
-        cls, strategy: _Strategy, params: dict[str, Any]
-    ) -> StubObject | T: ...
+        cls, strategy: Literal["build", "create"], params: dict[str, Any]
+    ) -> T: ...
+    @overload
+    @classmethod
+    def _generate(
+        cls, strategy: Literal["stub"], params: dict[str, Any]
+    ) -> StubObject: ...
     @classmethod
     def _after_postgeneration(
         cls,
@@ -137,16 +142,22 @@ class BaseFactory(Generic[T]):
     def stub(cls, **kwargs: Any) -> StubObject: ...
     @classmethod
     def stub_batch(cls, size: int, **kwargs: Any) -> list[StubObject]: ...
-
-    # TODO: We need an overload here
+    @overload
     @classmethod
-    def generate(cls, strategy: _Strategy, **kwargs: Any) -> StubObject | T: ...
-
-    # TODO: We need an overload here
+    def generate(cls, strategy: Literal["build", "create"], **kwargs: Any) -> T: ...
+    @overload
+    @classmethod
+    def generate(cls, strategy: Literal["stub"], **kwargs: Any) -> StubObject: ...
+    @overload
     @classmethod
     def generate_batch(
-        cls, strategy: _Strategy, size: int, **kwargs: Any
-    ) -> list[StubObject | T]: ...
+        cls, strategy: Literal["build", "create"], size: int, **kwargs: Any
+    ) -> list[T]: ...
+    @overload
+    @classmethod
+    def generate_batch(
+        cls, strategy: Literal["stub"], size: int, **kwargs: Any
+    ) -> list[StubObject]: ...
     @classmethod
     def simple_generate(cls, create: bool, **kwargs: Any) -> T: ...
     @classmethod
