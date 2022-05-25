@@ -1,10 +1,12 @@
-BUILD_STRATEGY: str
-CREATE_STRATEGY: str
-STUB_STRATEGY: str
+from typing import Any, Literal
+
+BUILD_STRATEGY: Literal["build"]
+CREATE_STRATEGY: Literal["create"]
+STUB_STRATEGY: Literal["stub"]
 SPLITTER: str
 
 class BuilderPhase:
-    ATTRIBUTE_RESOLUTION: str
-    POST_INSTANTIATION: str
+    ATTRIBUTE_RESOLUTION: Literal["attributes"]
+    POST_INSTANTIATION: Literal["post_instance"]
 
-def get_builder_phase(obj): ...
+def get_builder_phase(obj: Any) -> Literal["attributes", "post_instance"] | None: ...
