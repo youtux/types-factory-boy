@@ -10,10 +10,10 @@ from typing import (
     NoReturn,
     Tuple,
     Type,
-    TypeAlias,
     TypeVar,
     overload,
 )
+from typing_extensions import TypeAlias
 
 from . import builder, declarations, errors
 
@@ -24,15 +24,16 @@ _Strategy: TypeAlias = Literal["build", "create", "stub"]
 
 logger: logging.Logger
 
-def get_factory_bases(bases: Iterable[Type]) -> List[Type[BaseFactory]]: ...
+def get_factory_bases(bases: Iterable[Type[Any]]) -> List[Type[BaseFactory[Any]]]: ...
 def resolve_attribute(
     name: str, bases: Iterable[Any], default: Any | None = ...
 ) -> Any: ...
 
 # TODO: Add a MetaProtocol, and use for `FactoryOptions.contribute_to_class... meta`
 
+
 class FactoryMetaClass(Generic[T], type):
-    def __call__(cls, **kwargs: Any) -> StubObject | T: ...
+    def __call__(cls, **kwargs: Any) -> StubObject | T: ...  # type: ignore
     def __new__(
         mcs, class_name: str, bases: Tuple[type], attrs: dict[str, Any]
     ) -> type: ...
@@ -41,19 +42,19 @@ class BaseMeta:
     abstract: bool
     strategy: _Strategy
 
-class OptionDefault:
+class OptionDefault(Generic[T]):
     name: str
-    value: Any
+    value: T
     inherit: bool
-    checker: Callable[[Type, Any], Any]
+    checker: Callable[[Type[Any], Any], Any]
     def __init__(
         self,
-        name,
-        value,
+        name: str,
+        value: T,
         inherit: bool = ...,
-        checker: Callable[[Type, Any], Any] | None = ...,
+        checker: Callable[[Type[Any], Any], Any] | None = ...,
     ) -> None: ...
-    def apply(self, meta: Type, base_meta: FactoryOptions) -> Any: ...
+    def apply(self, meta: Type[Any], base_meta: FactoryOptions) -> T: ...
 
 # Workaround for mypy until it supports typing.Self
 TFactoryOptions = TypeVar("TFactoryOptions", bound=FactoryOptions)
