@@ -31,7 +31,6 @@ def resolve_attribute(
 
 # TODO: Add a MetaProtocol, and use for `FactoryOptions.contribute_to_class... meta`
 
-
 class FactoryMetaClass(Generic[T], type):
     def __call__(cls, **kwargs: Any) -> StubObject | T: ...  # type: ignore
     def __new__(
@@ -54,20 +53,21 @@ class OptionDefault(Generic[T]):
         inherit: bool = ...,
         checker: Callable[[Type[Any], Any], Any] | None = ...,
     ) -> None: ...
-    def apply(self, meta: Type[Any], base_meta: FactoryOptions) -> T: ...
+    def apply(self, meta: Type[Any], base_meta: FactoryOptions[Any]) -> T: ...
 
 # Workaround for mypy until it supports typing.Self
-TFactoryOptions = TypeVar("TFactoryOptions", bound=FactoryOptions)
+TFactoryOptions = TypeVar("TFactoryOptions", bound=FactoryOptions[Any])
 
 class FactoryOptions(Generic[T]):
     factory: Type[Factory[T]] | None
-    base_factory: Type[BaseFactory] | None
+    base_factory: Type[BaseFactory[Any]] | None
     base_declarations: dict[str, Any]
     parameters: dict[str, declarations.Parameter]
     parameters_dependencies: dict[str, Any]
     pre_declarations: builder.DeclarationSet
     post_declarations: builder.DeclarationSet
-    counter_reference: TFactoryOptions[T] | None
+    # TODO: Figure out how to make this work:
+    # counter_reference: TFactoryOptions[T] | None
 
     def __init__(self) -> None: ...
     @property
@@ -75,11 +75,11 @@ class FactoryOptions(Generic[T]):
     def contribute_to_class(
         self,
         factory: Type[Factory[T]],
-        meta: Type | None = ...,
+        meta: Type[Any] | None = ...,
         base_meta: Any | None = ...,
-        base_factory: Type[BaseFactory] | None = ...,
+        base_factory: Type[BaseFactory[Any]] | None = ...,
         params: Mapping[str, Any] | None = ...,
-    ): ...
+    ) -> None: ...
     def next_sequence(self) -> int: ...
     def reset_sequence(self, value: int | None = ..., force: bool = ...) -> None: ...
     def prepare_arguments(
@@ -103,7 +103,7 @@ class BaseFactory(Generic[T]):
     UnknownStrategy: Type[errors.UnknownStrategy]
     UnsupportedStrategy: Type[errors.UnsupportedStrategy]
     _meta: FactoryOptions[T]
-    def __new__(cls, *args: Any, **kwargs: Any) -> NoReturn: ...
+    def __new__(cls, *args: Any, **kwargs: Any) -> NoReturn: ...  # type: ignore
     @classmethod
     def reset_sequence(cls, value: int | None = ..., force: bool = ...) -> None: ...
     @classmethod
@@ -138,7 +138,7 @@ class BaseFactory(Generic[T]):
     @classmethod
     def create(cls, **kwargs: Any) -> T: ...
     @classmethod
-    def create_batch(cls, size, **kwargs: Any) -> list[T]: ...
+    def create_batch(cls, size: int, **kwargs: Any) -> list[T]: ...
     @classmethod
     def stub(cls, **kwargs: Any) -> StubObject: ...
     @classmethod
@@ -166,7 +166,7 @@ class BaseFactory(Generic[T]):
         cls, create: bool, size: int, **kwargs: Any
     ) -> list[T]: ...
 
-class Factory(Generic[T], BaseFactory, metaclass=FactoryMetaClass):
+class Factory(Generic[T], BaseFactory[T], metaclass=FactoryMetaClass):
     AssociatedClassError: Type[errors.AssociatedClassError]
 
     class Meta(BaseMeta): ...
@@ -174,14 +174,12 @@ class Factory(Generic[T], BaseFactory, metaclass=FactoryMetaClass):
 class StubObject:
     def __init__(self, **kwargs: Any) -> None: ...
 
-TStubObject = TypeVar("TStubObject", bound=StubObject)
-
-class StubFactory(Factory):
+class StubFactory(Factory[StubObject]):
     class Meta:
         strategy: Literal["stub"]
         model: Type[StubObject]
     @classmethod
-    def build(cls, **kwargs: Any) -> TStubObject: ...
+    def build(cls, **kwargs: Any) -> StubObject: ...
     @classmethod
     def create(cls, **kwargs: Any) -> NoReturn: ...
 
@@ -189,25 +187,25 @@ class BaseDictFactory(Generic[T], Factory[T]):
     class Meta:
         abstract: bool
     @classmethod
-    def _build(cls, model_class: Type[T], **kwargs: Any) -> T: ...
+    def _build(cls, model_class: Type[T], **kwargs: Any) -> T: ...  # type: ignore
     @classmethod
-    def _create(cls, model_class: Type[T], **kwargs: Any) -> T: ...
+    def _create(cls, model_class: Type[T], **kwargs: Any) -> T: ...  # type: ignore
 
 class DictFactory(Generic[KT, VT], BaseDictFactory[dict[KT, VT]]):
     class Meta:
-        model: Type[dict[KT, VT]]
+        model: Type[dict[Any, Any]]
 
 class BaseListFactory(Generic[T], Factory[Iterable[T]]):
     class Meta:
         abstract: bool
     @classmethod
-    def _build(cls, model_class: Type[Iterable[T]], **kwargs: T) -> Iterable[T]: ...
+    def _build(cls, model_class: Type[Iterable[T]], **kwargs: T) -> Iterable[T]: ...  # type: ignore
 
 class ListFactory(Generic[T], BaseListFactory[T]):
     class Meta:
-        model: list[T]
+        model: Type[list[Any]]
 
-TBaseFactoryType = TypeVar("TBaseFactoryType", bound=Type[BaseFactory])
+TBaseFactoryType = TypeVar("TBaseFactoryType", bound=Type[BaseFactory[Any]])
 
 def use_strategy(
     new_strategy: _Strategy,
