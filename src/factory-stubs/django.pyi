@@ -1,14 +1,15 @@
+import logging
 from _typeshed import Incomplete
+from typing import Any
 
 from . import base, declarations, errors
 
-logger: Incomplete
+logger: logging.Logger
 DEFAULT_DB_ALIAS: str
 
-def get_model(app, model): ...
+def get_model(app: str, model: str | None = ...) -> Any: ...
 
 class DjangoOptions(base.FactoryOptions):
-    model: Incomplete
     def get_model_class(self): ...
 
 class DjangoModelFactory(base.Factory):
