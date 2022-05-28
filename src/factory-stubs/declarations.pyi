@@ -102,7 +102,7 @@ class Sequence(BaseDeclaration[Any, V]):
 
     def __init__(self, function: Callable[[int], V]) -> None: ...
 
-class LazyAttributeSequence(Sequence[T, V]):
+class LazyAttributeSequence(Generic[T, V], Sequence[V]):
     # Workaround for mypy bug https://github.com/python/mypy/issues/708
     # Otherwise it would just be this:
     # function: Callable[[builder.Resolver, int], V]
@@ -112,8 +112,14 @@ class LazyAttributeSequence(Sequence[T, V]):
     def __init__(self, function: Callable[[builder.Resolver, int], V]) -> None: ...
 
 class ContainerAttribute(BaseDeclaration[T, V]):
-    function: Callable[[builder.Resolver, Tuple[builder.Resolver, ...]], V]
+    # Workaround for mypy bug https://github.com/python/mypy/issues/708
+    # Otherwise it would just be this:
+    # function: Callable[[builder.Resolver, Tuple[builder.Resolver, ...]], V]
+    @staticmethod
+    def function(obj: builder.Resolver, containers: Tuple[builder.Resolver, ...], /) -> V: ...
+
     strict: bool
+
     def __init__(
         self,
         function: Callable[[builder.Resolver, Tuple[builder.Resolver, ...]], V],
