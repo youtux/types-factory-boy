@@ -55,8 +55,6 @@ class OptionDefault(Generic[T]):
     ) -> None: ...
     def apply(self, meta: Type[Any], base_meta: FactoryOptions[Any]) -> T: ...
 
-# Workaround for mypy until it supports typing.Self
-TFactoryOptions = TypeVar("TFactoryOptions", bound=FactoryOptions[Any])
 
 class FactoryOptions(Generic[T]):
     factory: Type[Factory[T]] | None
@@ -66,8 +64,7 @@ class FactoryOptions(Generic[T]):
     parameters_dependencies: dict[str, Any]
     pre_declarations: builder.DeclarationSet
     post_declarations: builder.DeclarationSet
-    # TODO: Figure out how to make this work:
-    # counter_reference: TFactoryOptions[T] | None
+    counter_reference: FactoryOptions[T] | None
 
     def __init__(self) -> None: ...
     @property
