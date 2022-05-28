@@ -17,6 +17,7 @@ from typing_extensions import TypeAlias
 
 from . import builder, declarations, errors
 
+# TODO: Figure out if we have to use covariant types for collections
 T = TypeVar("T")
 KT = TypeVar("KT")
 VT = TypeVar("VT")
@@ -29,10 +30,8 @@ def resolve_attribute(
     name: str, bases: Iterable[Any], default: Any | None = ...
 ) -> Any: ...
 
-# TODO: Add a MetaProtocol, and use for `FactoryOptions.contribute_to_class... meta`
-
 class FactoryMetaClass(Generic[T], type):
-    def __call__(cls, **kwargs: Any) -> StubObject | T: ...  # type: ignore
+    def __call__(cls, **kwargs: Any) -> StubObject | T: ...  # type: ignore[override]
     def __new__(
         mcs, class_name: str, bases: Tuple[type], attrs: dict[str, Any]
     ) -> type: ...
@@ -55,7 +54,6 @@ class OptionDefault(Generic[T]):
     ) -> None: ...
     def apply(self, meta: Type[Any], base_meta: FactoryOptions[Any]) -> T: ...
 
-
 class FactoryOptions(Generic[T]):
     factory: Type[Factory[T]] | None
     base_factory: Type[BaseFactory[Any]] | None
@@ -72,7 +70,7 @@ class FactoryOptions(Generic[T]):
     def contribute_to_class(
         self,
         factory: Type[Factory[T]],
-        meta: Type[Any] | None = ...,  # TODO: This should be Type[MetaProtocol]
+        meta: Type[Any] | None = ...,
         base_meta: FactoryOptions[T] | None = ...,
         base_factory: Type[BaseFactory[Any]] | None = ...,
         params: Mapping[str, Any] | None = ...,
@@ -86,7 +84,10 @@ class FactoryOptions(Generic[T]):
         self, step: builder.BuildStep[T], args: Iterable[Any], kwargs: Mapping[str, Any]
     ) -> T | StubObject: ...
     def use_postgeneration_results(
-        self, step: builder.BuildStep[T], instance: T | StubObject, results: dict[str, Any]
+        self,
+        step: builder.BuildStep[T],
+        instance: T | StubObject,
+        results: dict[str, Any],
     ) -> None: ...
     def get_model_class(self) -> Type[T]: ...
 
