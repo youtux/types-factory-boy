@@ -65,12 +65,6 @@ class LazyAttribute(BaseDeclaration[T, V]):
     def function(obj: builder.Resolver[T], /) -> V: ...
     def __init__(self, function: Callable[[builder.Resolver[T]], V]) -> None: ...
 
-# TODO: Make sure that reveal_type(a) == LazyAttribute(dict[str, str], float:
-# def floatify(o: dict[str, str]) -> float:
-#     return float(o['asd'])
-# a = LazyAttribute(floatify)
-# reveal_type(a)
-
 class _UNSPECIFIED: ...
 
 def deepgetattr(obj: Any, name: str, default: _UNSPECIFIED | Any = ...) -> Any: ...
@@ -143,7 +137,6 @@ class SubFactory(BaseDeclaration[T, V]):
     UNROLL_CONTEXT_BEFORE_EVALUATION: bool
     factory_wrapper: _FactoryWrapper[base.Factory[V]]
     def __init__(self, factory: str | Type[base.Factory[V]], **kwargs: Any) -> None: ...
-    # TODO: Can evaluate(instance) be a T, or can it be only a Resolver?
     def get_factory(self) -> Type[base.Factory[V]]: ...
 
 class Dict(Generic[T, KT, VT], SubFactory[T, dict[KT, VT]]):
