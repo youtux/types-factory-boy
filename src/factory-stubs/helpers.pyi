@@ -9,9 +9,9 @@ from typing import (
     TypeVar,
     overload,
 )
-# TODO: Rename T, V, to Source, Value
-T = TypeVar("T")
-V = TypeVar("V")
+
+T = TypeVar("T")  # Type of the instance
+V = TypeVar("V")  # Type of the attribute
 
 from . import base, builder, declarations
 
@@ -42,8 +42,8 @@ def simple_generate_batch(
 def lazy_attribute(
     func: Callable[[builder.Resolver], V]
 ) -> declarations.LazyAttribute[Any, V]: ...
-def iterator(func: Callable[[], Iterator[T]]) -> declarations.Iterator[T, T]: ...
-def sequence(func: Callable[[int], T]) -> declarations.Sequence[T]: ...
+def iterator(func: Callable[[], Iterator[V]]) -> declarations.Iterator[V, V]: ...
+def sequence(func: Callable[[int], V]) -> declarations.Sequence[V]: ...
 def lazy_attribute_sequence(
     func: Callable[[builder.Resolver, int], V]
 ) -> declarations.LazyAttributeSequence[T, V]: ...

@@ -15,8 +15,10 @@ from typing import (
 
 from . import base, utils, builder
 
-T = TypeVar("T")
-V = TypeVar("V")
+T = TypeVar("T")  # Type of the instance
+V = TypeVar("V")  # Type of the attribute
+S = TypeVar("S")  # General purpose type
+
 KT = TypeVar("KT")
 VT = TypeVar("VT")
 
@@ -52,7 +54,7 @@ class LazyFunction(BaseDeclaration[Any, V]):
     # Otherwise it would just be this:
     #     function: Callable[[], V]
     @staticmethod
-    def function() -> V : ...
+    def function() -> V: ...
     def __init__(self, function: Callable[[], V]) -> None: ...
 
 class LazyAttribute(BaseDeclaration[T, V]):
@@ -73,6 +75,7 @@ class _UNSPECIFIED: ...
 
 def deepgetattr(obj: Any, name: str, default: _UNSPECIFIED | Any = ...) -> Any: ...
 
+# TODO: Not sure if SelfAttribute can have T type, since it can access parents. Check that.
 class SelfAttribute(BaseDeclaration[T, V]):
     depth: int
     attribute_name: str
@@ -81,10 +84,10 @@ class SelfAttribute(BaseDeclaration[T, V]):
         self, attribute_name: str, default: _UNSPECIFIED | Any = ...
     ) -> None: ...
 
-class Iterator(Generic[T, V], BaseDeclaration[Any, V]):
-    getter: Callable[[T], V] | None
-    iterator: utils.ResetableIterator[typing.Iterator[T]] | None
-    iterator_builder: Callable[[], utils.ResetableIterator[T]]
+class Iterator(Generic[S, V], BaseDeclaration[Any, V]):
+    getter: Callable[[S], V] | None
+    iterator: utils.ResetableIterator[typing.Iterator[S]] | None
+    iterator_builder: Callable[[], utils.ResetableIterator[S]]
     def __init__(
         self,
         iterator: typing.Iterator[T],
@@ -99,7 +102,6 @@ class Sequence(BaseDeclaration[Any, V]):
     # function: Callable[[int], V]
     @staticmethod
     def function(sequence: int, /) -> V: ...
-
     def __init__(self, function: Callable[[int], V]) -> None: ...
 
 class LazyAttributeSequence(Generic[T, V], Sequence[V]):
@@ -108,7 +110,6 @@ class LazyAttributeSequence(Generic[T, V], Sequence[V]):
     # function: Callable[[builder.Resolver, int], V]
     @staticmethod
     def function(instance: builder.Resolver, sequence: int, /) -> V: ...  # type: ignore[override]
-
     def __init__(self, function: Callable[[builder.Resolver, int], V]) -> None: ...
 
 class ContainerAttribute(BaseDeclaration[T, V]):
@@ -116,7 +117,9 @@ class ContainerAttribute(BaseDeclaration[T, V]):
     # Otherwise it would just be this:
     # function: Callable[[builder.Resolver, Tuple[builder.Resolver, ...]], V]
     @staticmethod
-    def function(obj: builder.Resolver, containers: Tuple[builder.Resolver, ...], /) -> V: ...
+    def function(
+        obj: builder.Resolver, containers: Tuple[builder.Resolver, ...], /
+    ) -> V: ...
 
     strict: bool
 
@@ -143,7 +146,7 @@ class SubFactory(BaseDeclaration[T, V]):
     # TODO: Can evaluate(instance) be a T, or can it be only a Resolver?
     def get_factory(self) -> Type[base.Factory[V]]: ...
 
-class Dict(Generic[T, KT, VT], SubFactory[T, base.DictFactory[KT, VT]]):
+class Dict(Generic[T, KT, VT], SubFactory[T, dict[KT, VT]]):
     FORCE_SEQUENCE: bool
 
     # TODO: I'm not 100% about the type of params
@@ -153,11 +156,13 @@ class Dict(Generic[T, KT, VT], SubFactory[T, base.DictFactory[KT, VT]]):
         dict_factory: str | Type[base.DictFactory[KT, VT]] = ...,
     ) -> None: ...
 
-class List(Generic[T, V], SubFactory[T, base.ListFactory[V]]):
+class List(Generic[T, V], SubFactory[T, list[V]]):
     FORCE_SEQUENCE: bool
     # TODO: I'm not 100% about the type of params
     def __init__(
-        self, params: Iterable[V | SelfAttribute[list[V], V]], list_factory: str | Type[base.ListFactory[V]] = ...
+        self,
+        params: Iterable[V | SelfAttribute[list[V], V]],
+        list_factory: str | Type[base.ListFactory[V]] = ...,
     ) -> None: ...
 
 class Skip:
@@ -222,7 +227,6 @@ class PostGenerationDeclaration(BaseDeclaration[T, V]):
     def call(
         self, instance: T, step: builder.BuildStep[T], context: PostGenerationContext
     ) -> V: ...
-
 
 class PostGeneration(PostGenerationDeclaration[T, V]):
     # Workaround for mypy bug https://github.com/python/mypy/issues/708
