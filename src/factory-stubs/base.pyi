@@ -2,6 +2,7 @@ import logging
 from typing import (
     Any,
     Callable,
+    Container,
     Generic,
     Iterable,
     List,
@@ -181,29 +182,29 @@ class StubFactory(Factory[StubObject]):
     @classmethod
     def create(cls, **kwargs: Any) -> NoReturn: ...
 
-# TODO: This should be a TMapping = TypeVar("T", bound=Mapping[KT, KV),
-#  but it doesn't seem possible with mypy
-class BaseDictFactory(Factory[T]):
+TMapping = TypeVar("TMapping", bound=Mapping[Any, Any])
+
+class BaseDictFactory(Factory[TMapping]):
     class Meta:
         abstract: bool
 
-class DictFactory(Generic[KT, VT], BaseDictFactory[dict[KT, VT]]):
+class DictFactory(BaseDictFactory[TMapping]):
     class Meta:
         # This would be:
-        # model: Type[dict[KT, VT]]
+        # model: Type[TMapping]
         # but mypy doesn't support it
         model: Type[dict[Any, Any]]
 
-# TODO: This should be a TContainer = TypeVar("T", bound=Container[KT, KV),
-#  but it doesn't seem possible with mypy
-class BaseListFactory(Generic[T], Factory[T]):
+TContainer = TypeVar("TContainer", bound=Container[Any])
+
+class BaseListFactory(Factory[TContainer]):
     class Meta:
         abstract: bool
 
-class ListFactory(Generic[T], BaseListFactory[list[T]]):
+class ListFactory(BaseListFactory[TContainer]):
     class Meta:
         # This would be:
-        # model: Type[list[T]]
+        # model: Type[TContainer]
         # but mypy doesn't support it
         model: Type[list[Any]]
 

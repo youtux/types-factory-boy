@@ -146,7 +146,7 @@ class Dict(Generic[T, KT, VT], SubFactory[T, dict[KT, VT]]):
     def __init__(
         self,
         params: Mapping[KT, VT | SelfAttribute[Mapping[KT, VT], VT]],
-        dict_factory: str | Type[base.DictFactory[KT, VT]] = ...,
+        dict_factory: str | Type[base.DictFactory[Mapping[KT, VT]]] = ...,
     ) -> None: ...
 
 class List(Generic[T, V], SubFactory[T, list[V]]):
@@ -155,7 +155,7 @@ class List(Generic[T, V], SubFactory[T, list[V]]):
     def __init__(
         self,
         params: Iterable[V | SelfAttribute[list[V], V]],
-        list_factory: str | Type[base.ListFactory[V]] = ...,
+        list_factory: str | Type[base.ListFactory[typing.Container[V]]] = ...,
     ) -> None: ...
 
 class Skip:
