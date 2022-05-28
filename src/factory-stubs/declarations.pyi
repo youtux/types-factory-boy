@@ -16,7 +16,6 @@ from typing import (
 from . import base, utils, builder
 
 T = TypeVar("T")
-U = TypeVar("U")
 V = TypeVar("V")
 KT = TypeVar("KT")
 VT = TypeVar("VT")
@@ -48,7 +47,7 @@ class BaseDeclaration(Generic[T, V], utils.OrderedBase):
 
 class OrderedDeclaration(BaseDeclaration[T, V]): ...
 
-class LazyFunction(BaseDeclaration[T, V]):
+class LazyFunction(BaseDeclaration[Any, V]):
     # Workaround for mypy bug https://github.com/python/mypy/issues/708
     # Otherwise it would just be this:
     #     function: Callable[[], V]
@@ -82,19 +81,19 @@ class SelfAttribute(BaseDeclaration[T, V]):
         self, attribute_name: str, default: _UNSPECIFIED | Any = ...
     ) -> None: ...
 
-class Iterator(Generic[U, T, V], BaseDeclaration[T, V]):
-    getter: Callable[[U], V] | None
-    iterator: utils.ResetableIterator[typing.Iterator[U]] | None
-    iterator_builder: Callable[[], utils.ResetableIterator[U]]
+class Iterator(Generic[T, V], BaseDeclaration[Any, V]):
+    getter: Callable[[T], V] | None
+    iterator: utils.ResetableIterator[typing.Iterator[T]] | None
+    iterator_builder: Callable[[], utils.ResetableIterator[T]]
     def __init__(
         self,
-        iterator: typing.Iterator[U],
+        iterator: typing.Iterator[T],
         cycle: bool = ...,
-        getter: Callable[[U], V] | None = ...,
+        getter: Callable[[T], V] | None = ...,
     ): ...
     def reset(self) -> None: ...
 
-class Sequence(BaseDeclaration[T, V]):
+class Sequence(BaseDeclaration[Any, V]):
     # Workaround for mypy bug https://github.com/python/mypy/issues/708
     # Otherwise it would just be this:
     # function: Callable[[int], V]
