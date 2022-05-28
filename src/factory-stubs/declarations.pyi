@@ -163,26 +163,25 @@ class Skip:
 
 SKIP: Skip
 
-class Maybe(BaseDeclaration[T, Any]):
-    decider: SelfAttribute[T, Any]
-    # TODO: These should be Skip | U | BaseDeclaration[T, U]
-    yes: Skip | Any
-    no: Skip | Any
+class Maybe(BaseDeclaration[T, V]):
+    decider: BaseDeclaration[T, Any]
+    yes: Skip | V | BaseDeclaration[T, V]
+    no: Skip | V | BaseDeclaration[T, V]
     def __init__(
         self,
-        decider: SelfAttribute[T, Any] | str,
-        yes_declaration: Skip | Any = ...,
-        no_declaration: Skip | Any = ...,
+        decider: BaseDeclaration[T, Any] | str,
+        yes_declaration: Skip | V | BaseDeclaration[T, V] = ...,
+        no_declaration: Skip | V | BaseDeclaration[T, V] = ...,
     ) -> None: ...
     def evaluate_post(
         self, instance: T, step: builder.BuildStep[T], overrides: dict[str, Any]
-    ) -> Any: ...
+    ) -> V: ...
     def evaluate_pre(
         self,
         instance: builder.Resolver[T],
         step: builder.BuildStep[T],
         overrides: dict[str, Any],
-    ) -> Any: ...
+    ) -> V: ...
 
 class Parameter(utils.OrderedBase):
     def as_declarations(
@@ -206,7 +205,7 @@ class Trait(Parameter):
     def __init__(self, **overrides: Any) -> None: ...
     def as_declarations(
         self, field_name: str, declarations: dict[str, Any]
-    ) -> dict[str, Maybe[Any]]: ...
+    ) -> dict[str, Maybe[Any, Any]]: ...
 
 class PostGenerationContext(NamedTuple):
     value_provided: bool
