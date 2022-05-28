@@ -49,12 +49,26 @@ class BaseDeclaration(Generic[T, V], utils.OrderedBase):
 class OrderedDeclaration(BaseDeclaration[T, V]): ...
 
 class LazyFunction(BaseDeclaration[T, V]):
-    function: Callable[[], V]
+    # Workaround for mypy bug https://github.com/python/mypy/issues/708
+    # Otherwise it would just be this:
+    #     function: Callable[[], V]
+    @staticmethod
+    def function() -> V : ...
     def __init__(self, function: Callable[[], V]) -> None: ...
 
 class LazyAttribute(BaseDeclaration[T, V]):
-    function: Callable[[builder.Resolver], V]
+    # Workaround for mypy bug https://github.com/python/mypy/issues/708
+    # Otherwise it would just be this:
+    #     function: Callable[[builder.Resolver], V]
+    @staticmethod
+    def function(obj: builder.Resolver, /) -> V: ...
     def __init__(self, function: Callable[[builder.Resolver], V]) -> None: ...
+
+# TODO: Make sure that reveal_type(a) == LazyAttribute(dict[str, str], float:
+# def floatify(o: dict[str, str]) -> float:
+#     return float(o['asd'])
+# a = LazyAttribute(floatify)
+# reveal_type(a)
 
 class _UNSPECIFIED: ...
 
