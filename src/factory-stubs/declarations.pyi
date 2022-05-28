@@ -30,19 +30,19 @@ class BaseDeclaration(Generic[T, V], utils.OrderedBase):
     def __init__(self, **defaults: Any) -> None: ...
     def unroll_context(
         self,
-        instance: builder.Resolver,
+        instance: builder.Resolver[T],
         step: builder.BuildStep[T],
         context: Mapping[str, Any],
     ) -> dict[str, Any]: ...
     def evaluate_pre(
         self,
-        instance: builder.Resolver,
+        instance: builder.Resolver[T],
         step: builder.BuildStep[T],
         overrides: dict[str, Any],
     ) -> V: ...
     def evaluate(
         self,
-        instance: builder.Resolver,
+        instance: builder.Resolver[T],
         step: builder.BuildStep[T],
         extra: dict[str, Any],
     ) -> V: ...
@@ -62,8 +62,8 @@ class LazyAttribute(BaseDeclaration[T, V]):
     # Otherwise it would just be this:
     #     function: Callable[[builder.Resolver], V]
     @staticmethod
-    def function(obj: builder.Resolver, /) -> V: ...
-    def __init__(self, function: Callable[[builder.Resolver], V]) -> None: ...
+    def function(obj: builder.Resolver[T], /) -> V: ...
+    def __init__(self, function: Callable[[builder.Resolver[T]], V]) -> None: ...
 
 # TODO: Make sure that reveal_type(a) == LazyAttribute(dict[str, str], float:
 # def floatify(o: dict[str, str]) -> float:
@@ -107,25 +107,25 @@ class Sequence(BaseDeclaration[Any, V]):
 class LazyAttributeSequence(Generic[T, V], Sequence[V]):
     # Workaround for mypy bug https://github.com/python/mypy/issues/708
     # Otherwise it would just be this:
-    # function: Callable[[builder.Resolver, int], V]
+    # function: Callable[[builder.Resolver[T], int], V]
     @staticmethod
-    def function(instance: builder.Resolver, sequence: int, /) -> V: ...  # type: ignore[override]
-    def __init__(self, function: Callable[[builder.Resolver, int], V]) -> None: ...
+    def function(instance: builder.Resolver[T], sequence: int, /) -> V: ...  # type: ignore[override]
+    def __init__(self, function: Callable[[builder.Resolver[T], int], V]) -> None: ...
 
 class ContainerAttribute(BaseDeclaration[T, V]):
     # Workaround for mypy bug https://github.com/python/mypy/issues/708
     # Otherwise it would just be this:
-    # function: Callable[[builder.Resolver, Tuple[builder.Resolver, ...]], V]
+    # function: Callable[[builder.Resolver[T], Tuple[builder.Resolver[Any, ...]], V]
     @staticmethod
     def function(
-        obj: builder.Resolver, containers: Tuple[builder.Resolver, ...], /
+        obj: builder.Resolver[T], containers: Tuple[builder.Resolver[Any], ...], /
     ) -> V: ...
 
     strict: bool
 
     def __init__(
         self,
-        function: Callable[[builder.Resolver, Tuple[builder.Resolver, ...]], V],
+        function: Callable[[builder.Resolver[T], Tuple[builder.Resolver[Any], ...]], V],
         strict: bool = ...,
     ) -> None: ...
 
@@ -186,7 +186,7 @@ class Maybe(BaseDeclaration[T, Any]):
     ) -> Any: ...
     def evaluate_pre(
         self,
-        instance: builder.Resolver,
+        instance: builder.Resolver[T],
         step: builder.BuildStep[T],
         overrides: dict[str, Any],
     ) -> Any: ...
