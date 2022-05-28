@@ -75,8 +75,8 @@ class FactoryOptions(Generic[T]):
     def contribute_to_class(
         self,
         factory: Type[Factory[T]],
-        meta: Type[Any] | None = ...,
-        base_meta: Any | None = ...,
+        meta: Type[Any] | None = ...,  # TODO: This should be Type[MetaProtocol]
+        base_meta: FactoryOptions[T] | None = ...,
         base_factory: Type[BaseFactory[Any]] | None = ...,
         params: Mapping[str, Any] | None = ...,
     ) -> None: ...
@@ -86,12 +86,12 @@ class FactoryOptions(Generic[T]):
         self, attributes: Mapping[str, Any]
     ) -> Tuple[Tuple[Any, ...], dict[str, Any]]: ...
     def instantiate(
-        self, step: builder.BuildStep, args: Type[Any], kwargs: Mapping[str, Any]
+        self, step: builder.BuildStep[T], args: Iterable[Any], kwargs: Mapping[str, Any]
     ) -> T | StubObject: ...
     def use_postgeneration_results(
-        self, step: builder.BuildStep, instance: T | StubObject, results: dict[str, Any]
+        self, step: builder.BuildStep[T], instance: T | StubObject, results: dict[str, Any]
     ) -> None: ...
-    def get_model_class(self) -> Factory[T]: ...
+    def get_model_class(self) -> Type[T]: ...
 
 class _Counter:
     seq: int
