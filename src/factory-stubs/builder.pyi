@@ -89,6 +89,7 @@ class StepBuilder(Generic[T]):
         self, factory_meta: base.FactoryOptions[V], extras: dict[str, Any]
     ) -> StepBuilder[V]: ...
 
+# TODO: Make this Generic[T]
 class Resolver:
     def __init__(
         self, declarations: DeclarationSet, step: BuildStep[Any], sequence: Any

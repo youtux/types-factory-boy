@@ -183,26 +183,30 @@ class StubFactory(Factory[StubObject]):
     @classmethod
     def create(cls, **kwargs: Any) -> NoReturn: ...
 
-class BaseDictFactory(Generic[T], Factory[T]):
+# TODO: This should be a TMapping = TypeVar("T", bound=Mapping[KT, KV),
+#  but it doesn't seem possible with mypy
+class BaseDictFactory(Factory[T]):
     class Meta:
         abstract: bool
-    @classmethod
-    def _build(cls, model_class: Type[T], **kwargs: Any) -> T: ...  # type: ignore
-    @classmethod
-    def _create(cls, model_class: Type[T], **kwargs: Any) -> T: ...  # type: ignore
 
 class DictFactory(Generic[KT, VT], BaseDictFactory[dict[KT, VT]]):
     class Meta:
+        # This would be:
+        # model: Type[dict[KT, VT]]
+        # but mypy doesn't support it
         model: Type[dict[Any, Any]]
 
-class BaseListFactory(Generic[T], Factory[Iterable[T]]):
+# TODO: This should be a TContainer = TypeVar("T", bound=Container[KT, KV),
+#  but it doesn't seem possible with mypy
+class BaseListFactory(Generic[T], Factory[T]):
     class Meta:
         abstract: bool
-    @classmethod
-    def _build(cls, model_class: Type[Iterable[T]], **kwargs: T) -> Iterable[T]: ...  # type: ignore
 
-class ListFactory(Generic[T], BaseListFactory[T]):
+class ListFactory(Generic[T], BaseListFactory[list[T]]):
     class Meta:
+        # This would be:
+        # model: Type[list[T]]
+        # but mypy doesn't support it
         model: Type[list[Any]]
 
 TBaseFactoryType = TypeVar("TBaseFactoryType", bound=Type[BaseFactory[Any]])
