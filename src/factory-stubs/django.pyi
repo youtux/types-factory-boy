@@ -4,8 +4,8 @@ from typing import Any, TypeVar, Type, Callable, Hashable, overload
 from typing_extensions import ParamSpec
 
 from django.db import models
+from django.dispatch.dispatcher import Signal
 from django.core.files import File
-from django.db.models.signals import ModelSignal
 
 from . import base, declarations
 
@@ -38,9 +38,9 @@ mute_signals_T = TypeVar("mute_signals_T", bound=mute_signals)
 FactoryTypeT = TypeVar("FactoryTypeT", bound=Type[base.Factory[Any]])
 
 class mute_signals:
-    signals: tuple[ModelSignal]
-    paused: dict[ModelSignal, tuple[tuple[Hashable, int], Callable[..., Any]]]
-    def __init__(self, *signals: ModelSignal) -> None: ...
+    signals: tuple[Signal]
+    paused: dict[Signal, tuple[tuple[Hashable, int], Callable[..., Any]]]
+    def __init__(self, *signals: Signal) -> None: ...
     def __enter__(self) -> None: ...
     def __exit__(
         self,
