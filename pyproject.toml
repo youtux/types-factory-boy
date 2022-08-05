@@ -11,7 +11,7 @@ factory-boy = ">=3.2.0"
 typing-extensions = "^4.2.0"
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.960"
+mypy = "^0.971"
 SQLAlchemy = "^1.4.36"
 Django = "^3.2"
 mongoengine = "^0.24.1"
