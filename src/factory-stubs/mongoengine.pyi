@@ -1,5 +1,9 @@
+from typing import TypeVar
+
 from . import base
 
-class MongoEngineFactory(base.Factory):
+T = TypeVar("T")
+
+class MongoEngineFactory(base.Factory[T]):
     class Meta:
         abstract: bool
