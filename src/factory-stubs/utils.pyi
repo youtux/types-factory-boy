@@ -25,7 +25,7 @@ class log_pprint:
     ) -> None: ...
 
 class ResetableIterator(Generic[T]):
-    iterator: Iterable[T]
+    iterator: Iterator[T]
     past_elements: collections.deque[T]
     next_elements: collections.deque[T]
     def __init__(self, iterator: Iterable[T], **kwargs: Any) -> None: ...

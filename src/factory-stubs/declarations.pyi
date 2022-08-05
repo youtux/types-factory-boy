@@ -13,7 +13,7 @@ from typing import (
     TypeVar,
 )
 
-from . import base, utils, builder
+from . import base, builder, utils
 
 T = TypeVar("T")  # Type of the instance
 V = TypeVar("V")  # Type of the attribute
@@ -80,11 +80,11 @@ class SelfAttribute(BaseDeclaration[T, V]):
 
 class Iterator(Generic[S, V], BaseDeclaration[Any, V]):
     getter: Callable[[S], V] | None
-    iterator: utils.ResetableIterator[typing.Iterator[S]] | None
+    iterator: utils.ResetableIterator[S] | None
     iterator_builder: Callable[[], utils.ResetableIterator[S]]
     def __init__(
         self,
-        iterator: typing.Iterator[T],
+        iterator: typing.Iterable[T],
         cycle: bool = ...,
         getter: Callable[[T], V] | None = ...,
     ): ...
