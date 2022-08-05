@@ -1,16 +1,13 @@
-from typing import Any, ContextManager, TypeVar, Generic
+from typing import Any, ContextManager
 
 import faker
 import faker.providers
 
 from . import declarations
 
-T = TypeVar("T")  # Type of the instance
-V = TypeVar("V")  # Type of the attribute
-
-class Faker(Generic[T, V], declarations.BaseDeclaration[T, V]):
+class Faker(declarations.BaseDeclaration):
     provider: str
-    def __init__(self, provider: str, **kwargs: declarations.BaseDeclaration[T, Any] | Any) -> None: ...
+    def __init__(self, provider: str, **kwargs: Any) -> None: ...
     @classmethod
     def override_default_locale(cls, locale: str) -> ContextManager[None]: ...
     @classmethod

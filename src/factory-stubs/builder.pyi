@@ -6,17 +6,15 @@ from typing import (
     Literal,
     Mapping,
     NamedTuple,
+    TypeAlias,
     TypeVar,
 )
-
-from typing_extensions import TypeAlias
 
 from . import base
 
 T = TypeVar("T")
-V = TypeVar("V")
 
-_Strategy: TypeAlias = Literal["build", "create", "stub"]
+StrategyType: TypeAlias = Literal["build", "create", "stub"]
 
 class DeclarationWithContext(NamedTuple):
     name: str
@@ -49,52 +47,54 @@ def parse_declarations(
     base_post: DeclarationSet | None = ...,
 ) -> tuple[DeclarationSet, DeclarationSet]: ...
 
-class BuildStep(Generic[T]):
-    builder: StepBuilder[T]
+TBuildStep = TypeVar("TBuildStep", bound=BuildStep)
+
+class BuildStep:
+    builder: StepBuilder
     sequence: int
     attributes: dict[str, Any]
-    parent_step: BuildStep[Any]
-    stub: Resolver[T]
+    parent_step: TBuildStep
+    stub: Resolver
     def __init__(
-        self, builder: StepBuilder[T], sequence: int, parent_step: BuildStep[Any] | None = ...
+        self, builder: StepBuilder, sequence: int, parent_step: TBuildStep | None = ...
     ) -> None: ...
     def resolve(self, declarations: DeclarationSet) -> None: ...
     @property
-    def chain(self) -> tuple[Resolver[Any], ...]: ...
+    def chain(self) -> tuple[Resolver, ...]: ...
     def recurse(
         self,
-        factory: base.BaseFactory[V],
+        factory: base.BaseFactory,
         declarations: DeclarationSet,
         force_sequence: int | None = ...,
-    ) -> V | base.StubObject: ...
+    ) -> Any: ...
 
+TStepBuilder = TypeVar("TStepBuilder", bound=StepBuilder)
 
 class StepBuilder(Generic[T]):
     factory_meta: base.FactoryOptions[T]
-    strategy: _Strategy
+    strategy: StrategyType
     extras: dict[str, Any]
     force_init_sequence: int | None
     def __init__(
         self,
-        factory_meta: base.FactoryOptions[T],
+        factory_meta: base.FactoryOptions,
         extras: dict[str, Any],
-        strategy: _Strategy,
+        strategy: StrategyType,
     ) -> None: ...
     def build(
         self,
-        parent_step: BuildStep[Any] | None = ...,
+        parent_step: BuildStep | None = ...,
         force_sequence: int | None = ...,
     ) -> T | base.StubObject: ...
     def recurse(
-        self, factory_meta: base.FactoryOptions[V], extras: dict[str, Any]
-    ) -> StepBuilder[V]: ...
+        self, factory_meta: base.FactoryOptions[T], extras: dict[str, Any]
+    ) -> TStepBuilder[T]: ...
 
-
-class Resolver(Generic[T]):
+class Resolver:
     def __init__(
-        self, declarations: DeclarationSet, step: BuildStep[T], sequence: Any
+        self, declarations: DeclarationSet, step: BuildStep, sequence: Any
     ) -> None: ...
     @property
-    def factory_parent(self) -> Resolver[Any]: ...
-    def __getattr__(self, name: str) -> Any: ...
+    def factory_parent(self) -> Resolver: ...
+    def __getattr__(self, name: Any) -> Any: ...
     def __setattr__(self, name: str, value: Any) -> None: ...

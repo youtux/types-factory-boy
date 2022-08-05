@@ -1,5 +1,4 @@
 import logging
-import typing
 from typing import (
     Any,
     Callable,
@@ -13,64 +12,54 @@ from typing import (
     TypeVar,
 )
 
-from . import base, utils, builder
+from factory.builder import BuildStep, Resolver
 
-T = TypeVar("T")  # Type of the instance
-V = TypeVar("V")  # Type of the attribute
-S = TypeVar("S")  # General purpose type
+from . import base, utils
 
+T = TypeVar("T")
+V = TypeVar("V")
 KT = TypeVar("KT")
 VT = TypeVar("VT")
 
+TFactory = TypeVar("TFactory", bound=base.Factory)
+
 logger: logging.Logger
 
-class BaseDeclaration(Generic[T, V], utils.OrderedBase):
+class BaseDeclaration(utils.OrderedBase):
     FACTORY_BUILDER_PHASE: Literal["attributes", "post_instance"]
     UNROLL_CONTEXT_BEFORE_EVALUATION: bool
     def __init__(self, **defaults: Any) -> None: ...
     def unroll_context(
-        self,
-        instance: builder.Resolver[T],
-        step: builder.BuildStep[T],
-        context: Mapping[str, Any],
+        self, instance: Resolver, step: BuildStep, context: Mapping[str, Any]
     ) -> dict[str, Any]: ...
     def evaluate_pre(
-        self,
-        instance: builder.Resolver[T],
-        step: builder.BuildStep[T],
-        overrides: dict[str, Any],
-    ) -> V: ...
+        self, instance: Resolver, step: BuildStep, overrides: dict[str, Any]
+    ): ...
     def evaluate(
-        self,
-        instance: builder.Resolver[T],
-        step: builder.BuildStep[T],
-        extra: dict[str, Any],
-    ) -> V: ...
+        self, instance: Resolver, step: BuildStep, extra: dict[str, Any]
+    ) -> Any: ...
 
-class OrderedDeclaration(BaseDeclaration[T, V]): ...
+class OrderedDeclaration(BaseDeclaration): ...
 
-class LazyFunction(BaseDeclaration[Any, V]):
-    # Workaround for mypy bug https://github.com/python/mypy/issues/708
-    # Otherwise it would just be this:
-    #     function: Callable[[], V]
-    @staticmethod
-    def function() -> V: ...
-    def __init__(self, function: Callable[[], V]) -> None: ...
+class LazyFunction(Generic[T], BaseDeclaration):
+    function: Callable[[], T]
+    def __init__(self, function: Callable[[], T]) -> None: ...
+    def evaluate(
+        self, instance: Resolver, step: BuildStep, extra: dict[str, Any]
+    ) -> T: ...
 
-class LazyAttribute(BaseDeclaration[T, V]):
-    # Workaround for mypy bug https://github.com/python/mypy/issues/708
-    # Otherwise it would just be this:
-    #     function: Callable[[builder.Resolver], V]
-    @staticmethod
-    def function(obj: builder.Resolver[T], /) -> V: ...
-    def __init__(self, function: Callable[[builder.Resolver[T]], V]) -> None: ...
+class LazyAttribute(Generic[T], BaseDeclaration):
+    function: Callable[[Resolver], T]
+    def __init__(self, function: Callable[[Resolver], T]) -> None: ...
+    def evaluate(
+        self, instance: Resolver, step: BuildStep, extra: dict[str, Any]
+    ) -> T: ...
 
 class _UNSPECIFIED: ...
 
 def deepgetattr(obj: Any, name: str, default: _UNSPECIFIED | Any = ...) -> Any: ...
 
-# TODO: Not sure if SelfAttribute can have T type, since it can access parents. Check that.
-class SelfAttribute(BaseDeclaration[T, V]):
+class SelfAttribute(BaseDeclaration):
     depth: int
     attribute_name: str
     default: _UNSPECIFIED | Any
@@ -78,84 +67,75 @@ class SelfAttribute(BaseDeclaration[T, V]):
         self, attribute_name: str, default: _UNSPECIFIED | Any = ...
     ) -> None: ...
 
-class Iterator(Generic[S, V], BaseDeclaration[Any, V]):
-    getter: Callable[[S], V] | None
-    iterator: utils.ResetableIterator[typing.Iterator[S]] | None
-    iterator_builder: Callable[[], utils.ResetableIterator[S]]
+class Iterator(Generic[T, V], BaseDeclaration):
+    getter: Callable[[T], V] | None
+    iterator: utils.ResetableIterator[Iterator[T]] | None
+    iterator_builder: Callable[[], utils.ResetableIterator[T]]
     def __init__(
         self,
-        iterator: typing.Iterator[T],
+        iterator: Iterator[T],
         cycle: bool = ...,
         getter: Callable[[T], V] | None = ...,
     ): ...
+    def evaluate(
+        self, instance: Resolver, step: BuildStep, extra: dict[str, Any]
+    ) -> V: ...
     def reset(self) -> None: ...
 
-class Sequence(BaseDeclaration[Any, V]):
-    # Workaround for mypy bug https://github.com/python/mypy/issues/708
-    # Otherwise it would just be this:
-    # function: Callable[[int], V]
-    @staticmethod
-    def function(sequence: int, /) -> V: ...
-    def __init__(self, function: Callable[[int], V]) -> None: ...
+class Sequence(Generic[T], BaseDeclaration):
+    function: Callable[[int], T]
+    def __init__(self, function: Callable[[int], T]) -> None: ...
+    def evaluate(
+        self, instance: Resolver, step: BuildStep, extra: dict[str, Any]
+    ) -> T: ...
 
-class LazyAttributeSequence(Generic[T, V], Sequence[V]):
-    # Workaround for mypy bug https://github.com/python/mypy/issues/708
-    # Otherwise it would just be this:
-    # function: Callable[[builder.Resolver[T], int], V]
-    @staticmethod
-    def function(instance: builder.Resolver[T], sequence: int, /) -> V: ...  # type: ignore[override]
-    def __init__(self, function: Callable[[builder.Resolver[T], int], V]) -> None: ...
+class LazyAttributeSequence(Sequence[T]):
+    function: Callable[[Resolver, int], T]
+    def __init__(self, function: Callable[[Resolver, int], T]) -> None: ...
+    def evaluate(
+        self, instance: Resolver, step: BuildStep, extra: dict[str, Any]
+    ) -> T: ...
 
-class ContainerAttribute(BaseDeclaration[T, V]):
-    # Workaround for mypy bug https://github.com/python/mypy/issues/708
-    # Otherwise it would just be this:
-    # function: Callable[[builder.Resolver[T], Tuple[builder.Resolver[Any, ...]], V]
-    @staticmethod
-    def function(
-        obj: builder.Resolver[T], containers: Tuple[builder.Resolver[Any], ...], /
-    ) -> V: ...
-
+class ContainerAttribute(Generic[T], BaseDeclaration):
+    function: Callable[[Resolver, Tuple[Resolver, ...]], T]
     strict: bool
-
     def __init__(
         self,
-        function: Callable[[builder.Resolver[T], Tuple[builder.Resolver[Any], ...]], V],
+        function: Callable[[Resolver, Tuple[Resolver, ...]], T],
         strict: bool = ...,
     ) -> None: ...
+    def evaluate(
+        self, instance: Resolver, step: BuildStep, extra: dict[str, Any]
+    ) -> T: ...
 
-class ParameteredAttribute(BaseDeclaration[T, V]):
-    def generate(self, step: builder.BuildStep[T], params: dict[str, Any]) -> V: ...
+class ParameteredAttribute(BaseDeclaration):
+    def generate(self, step: BuildStep, params: dict[str, Any]) -> Any: ...
 
-class _FactoryWrapper(Generic[T]):
-    factory: Type[base.Factory[T]] | None
+class _FactoryWrapper(Generic[TFactory]):
+    factory: Type[TFactory] | None
     module: str
-    def __init__(self, factory_or_path: str | Type[base.Factory[T]]) -> None: ...
-    def get(self) -> Type[base.Factory[T]]: ...
+    def __init__(self, factory_or_path: str | Type[TFactory]) -> None: ...
+    def get(self) -> Type[TFactory]: ...
 
-class SubFactory(BaseDeclaration[T, V]):
+class SubFactory(Generic[TFactory], BaseDeclaration):
     FORCE_SEQUENCE: bool
     UNROLL_CONTEXT_BEFORE_EVALUATION: bool
-    factory_wrapper: _FactoryWrapper[base.Factory[V]]
-    def __init__(self, factory: str | Type[base.Factory[V]], **kwargs: Any) -> None: ...
-    def get_factory(self) -> Type[base.Factory[V]]: ...
+    factory_wrapper: _FactoryWrapper[TFactory]
+    def __init__(self, factory: str | Type[TFactory], **kwargs: Any) -> None: ...
+    def get_factory(self) -> Type[TFactory]: ...
 
-class Dict(Generic[T, KT, VT], SubFactory[T, dict[KT, VT]]):
+class Dict(Mapping[KT, VT], SubFactory[base.DictFactory[KT, VT]]):
     FORCE_SEQUENCE: bool
-
-    # TODO: I'm not 100% about the type of params
     def __init__(
         self,
-        params: Mapping[KT, VT | SelfAttribute[Mapping[KT, VT], VT]],
-        dict_factory: str | Type[base.DictFactory[Mapping[KT, VT]]] = ...,
+        params: Mapping[KT, VT] | Iterable[Tuple[KT, VT]],
+        dict_factory: str | Type[base.Factory] = ...,
     ) -> None: ...
 
-class List(Generic[T, V], SubFactory[T, list[V]]):
+class List(Generic[T], SubFactory[base.ListFactory[T]]):
     FORCE_SEQUENCE: bool
-    # TODO: I'm not 100% about the type of params
     def __init__(
-        self,
-        params: Iterable[V | SelfAttribute[list[V], V]],
-        list_factory: str | Type[base.ListFactory[typing.Container[V]]] = ...,
+        self, params: Iterable[T], list_factory: str | Type[base.Factory] = ...
     ) -> None: ...
 
 class Skip:
@@ -163,25 +143,22 @@ class Skip:
 
 SKIP: Skip
 
-class Maybe(BaseDeclaration[T, V]):
-    decider: BaseDeclaration[T, Any]
-    yes: Skip | V | BaseDeclaration[T, V]
-    no: Skip | V | BaseDeclaration[T, V]
+class Maybe(BaseDeclaration):
+    decider: SelfAttribute
+    yes: Any
+    no: Any
     def __init__(
         self,
-        decider: BaseDeclaration[T, Any] | str,
-        yes_declaration: Skip | V | BaseDeclaration[T, V] = ...,
-        no_declaration: Skip | V | BaseDeclaration[T, V] = ...,
+        decider: SelfAttribute | str,
+        yes_declaration: Skip | Any = ...,
+        no_declaration: Skip | Any = ...,
     ) -> None: ...
     def evaluate_post(
-        self, instance: T, step: builder.BuildStep[T], overrides: dict[str, Any]
-    ) -> V: ...
+        self, instance: Any, step: BuildStep, overrides: dict[str, Any]
+    ) -> Any: ...
     def evaluate_pre(
-        self,
-        instance: builder.Resolver[T],
-        step: builder.BuildStep[T],
-        overrides: dict[str, Any],
-    ) -> V: ...
+        self, instance: Resolver, step: BuildStep, overrides: dict[str, Any]
+    ) -> Any: ...
 
 class Parameter(utils.OrderedBase):
     def as_declarations(
@@ -189,69 +166,71 @@ class Parameter(utils.OrderedBase):
     ) -> dict[str, Any]: ...
     def get_revdeps(self, parameters: dict[str, Any]) -> list[str]: ...
 
-class SimpleParameter(Generic[S], Parameter):
-    value: S
-    def __init__(self, value: S) -> None: ...
+class SimpleParameter(Generic[T], Parameter):
+    value: T
+    def __init__(self, value: T) -> None: ...
     def as_declarations(
         self, field_name: str, declarations: dict[str, Any]
-    ) -> dict[str, S]: ...
+    ) -> dict[str, T]: ...
     @classmethod
-    def wrap(cls, value: Any) -> Parameter: ...
+    def wrap(cls, value: utils.OrderedBase | Parameter | Any) -> utils.OrderedBase: ...
 
-class Trait(Generic[T], Parameter):
+class Trait(Parameter):
     overrides: dict[str, Any]
-    def __init__(self, **overrides: BaseDeclaration[T, Any] | Any) -> None: ...
+    def __init__(self, **overrides: Any) -> None: ...
     def as_declarations(
         self, field_name: str, declarations: dict[str, Any]
-    ) -> dict[str, Maybe[T, Any]]: ...
+    ) -> dict[str, Maybe]: ...
 
 class PostGenerationContext(NamedTuple):
     value_provided: bool
     value: Any
     extra: dict[str, Any]
 
-class PostGenerationDeclaration(BaseDeclaration[T, V]):
+class PostGenerationDeclaration(BaseDeclaration):
     def evaluate_post(
-        self, instance: T, step: builder.BuildStep[T], overrides: dict[str, Any]
-    ) -> V: ...
+        self, instance: Any, step: BuildStep, overrides: dict[str, Any]
+    ) -> Any: ...
     def call(
-        self, instance: T, step: builder.BuildStep[T], context: PostGenerationContext
+        self, instance: Any, step: BuildStep, context: PostGenerationContext
+    ) -> Any: ...
+
+class PostGeneration(Generic[T, V], PostGenerationDeclaration):
+    function: Callable[[T, bool, Any, ...], V]
+    def __init__(self, function: Callable[[T, bool, Any, ...], V]) -> None: ...
+    def call(
+        self, instance: T, step: BuildStep, context: PostGenerationContext
     ) -> V: ...
 
-class PostGeneration(PostGenerationDeclaration[T, V]):
-    # Workaround for mypy bug https://github.com/python/mypy/issues/708
-    # Otherwise it would just be this:
-    # function: Callable[[T, bool, Any, ...], V]
-    @staticmethod
-    def function(obj: T, create: bool, extracted: Any, /, **kwargs: Any) -> V: ...
-    def __init__(self, function: Callable[[T, bool, Any], V]) -> None: ...
-
-class RelatedFactory(PostGenerationDeclaration[T, V]):
+class RelatedFactory(Generic[TFactory], PostGenerationDeclaration):
     UNROLL_CONTEXT_BEFORE_EVALUATION: bool
     name: str
     defaults: dict[str, Any]
-    factory_wrapper: _FactoryWrapper[base.Factory[V]]
+    factory_wrapper: _FactoryWrapper[TFactory]
     def __init__(
         self,
-        factory: str | Type[base.Factory[V]],
+        factory: str | Type[TFactory],
         factory_related_name: str = ...,
         **defaults: Any,
     ) -> None: ...
-    def get_factory(self) -> Type[base.Factory[V]]: ...
+    def get_factory(self) -> Type[TFactory]: ...
 
-class RelatedFactoryList(Generic[T, V], RelatedFactory[T, list[V]]):
+class RelatedFactoryList(Generic[TFactory], RelatedFactory[TFactory]):
     size: int | Callable[[], int]
     def __init__(
         self,
-        factory: str | Type[base.Factory[V]],
+        factory: str | Type[TFactory],
         factory_related_name: str = ...,
         size: int | Callable[[], int] = ...,
         **defaults: Any,
     ) -> None: ...
+    def call(
+        self, instance: Any, step: BuildStep, context: PostGenerationContext
+    ) -> list[Any]: ...
 
 class NotProvided: ...
 
-class PostGenerationMethodCall(PostGenerationDeclaration[T, V]):
+class PostGenerationMethodCall(PostGenerationDeclaration):
     method_name: str
     method_arg: Any
     method_kwargs: dict[str, Any]

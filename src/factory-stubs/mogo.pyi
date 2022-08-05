@@ -1,9 +1,5 @@
-from typing import TypeVar
-
 from . import base
 
-T = TypeVar("T")
-
-class MogoFactory(base.Factory[T]):
+class MogoFactory(base.Factory):
     class Meta:
         abstract: bool
