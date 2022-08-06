@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "types-factory-boy"
-version = "0.2.0"
+version = "0.3.0-dev0"
 description = ""
 authors = ["Alessio Bogon <youtux@gmail.com>"]
 packages = [{ include = "factory-stubs", from="src" }]
