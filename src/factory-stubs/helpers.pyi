@@ -3,12 +3,13 @@ from typing import (
     Callable,
     ContextManager,
     Iterator,
-    Literal,
     TextIO,
     Type,
     TypeVar,
     overload,
 )
+
+from typing_extensions import Literal
 
 T = TypeVar("T")  # Type of the instance
 V = TypeVar("V")  # Type of the attribute

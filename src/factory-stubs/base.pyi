@@ -6,7 +6,6 @@ from typing import (
     Generic,
     Iterable,
     List,
-    Literal,
     Mapping,
     NoReturn,
     Tuple,
@@ -14,7 +13,8 @@ from typing import (
     TypeVar,
     overload,
 )
-from typing_extensions import TypeAlias
+
+from typing_extensions import Literal, TypeAlias
 
 from . import builder, declarations, errors
 

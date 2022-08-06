@@ -5,13 +5,14 @@ from typing import (
     Callable,
     Generic,
     Iterable,
-    Literal,
     Mapping,
     NamedTuple,
     Tuple,
     Type,
     TypeVar,
 )
+
+from typing_extensions import Literal
 
 from . import base, builder, utils
 

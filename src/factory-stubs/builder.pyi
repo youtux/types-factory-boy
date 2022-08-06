@@ -1,15 +1,6 @@
-from typing import (
-    Any,
-    Generic,
-    Iterable,
-    Iterator,
-    Literal,
-    Mapping,
-    NamedTuple,
-    TypeVar,
-)
+from typing import Any, Generic, Iterable, Iterator, Mapping, NamedTuple, TypeVar
 
-from typing_extensions import TypeAlias
+from typing_extensions import Literal, TypeAlias
 
 from . import base
 
@@ -56,7 +47,10 @@ class BuildStep(Generic[T]):
     parent_step: BuildStep[Any]
     stub: Resolver[T]
     def __init__(
-        self, builder: StepBuilder[T], sequence: int, parent_step: BuildStep[Any] | None = ...
+        self,
+        builder: StepBuilder[T],
+        sequence: int,
+        parent_step: BuildStep[Any] | None = ...,
     ) -> None: ...
     def resolve(self, declarations: DeclarationSet) -> None: ...
     @property
@@ -67,7 +61,6 @@ class BuildStep(Generic[T]):
         declarations: DeclarationSet,
         force_sequence: int | None = ...,
     ) -> V | base.StubObject: ...
-
 
 class StepBuilder(Generic[T]):
     factory_meta: base.FactoryOptions[T]
@@ -88,7 +81,6 @@ class StepBuilder(Generic[T]):
     def recurse(
         self, factory_meta: base.FactoryOptions[V], extras: dict[str, Any]
     ) -> StepBuilder[V]: ...
-
 
 class Resolver(Generic[T]):
     def __init__(
