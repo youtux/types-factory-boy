@@ -62,7 +62,7 @@ class LazyAttribute(BaseDeclaration[T, V]):
     # Otherwise it would just be this:
     #     function: Callable[[builder.Resolver], V]
     @staticmethod
-    def function(obj: builder.Resolver[T], /) -> V: ...
+    def function(__obj: builder.Resolver[T]) -> V: ...
     def __init__(self, function: Callable[[builder.Resolver[T]], V]) -> None: ...
 
 class _UNSPECIFIED: ...
@@ -95,7 +95,7 @@ class Sequence(BaseDeclaration[Any, V]):
     # Otherwise it would just be this:
     # function: Callable[[int], V]
     @staticmethod
-    def function(sequence: int, /) -> V: ...
+    def function(__sequence: int) -> V: ...
     def __init__(self, function: Callable[[int], V]) -> None: ...
 
 class LazyAttributeSequence(Generic[T, V], Sequence[V]):
@@ -103,7 +103,7 @@ class LazyAttributeSequence(Generic[T, V], Sequence[V]):
     # Otherwise it would just be this:
     # function: Callable[[builder.Resolver[T], int], V]
     @staticmethod
-    def function(instance: builder.Resolver[T], sequence: int, /) -> V: ...  # type: ignore[override]
+    def function(__instance: builder.Resolver[T], __sequence: int) -> V: ...  # type: ignore[override]
     def __init__(self, function: Callable[[builder.Resolver[T], int], V]) -> None: ...
 
 class ContainerAttribute(BaseDeclaration[T, V]):
@@ -112,7 +112,7 @@ class ContainerAttribute(BaseDeclaration[T, V]):
     # function: Callable[[builder.Resolver[T], Tuple[builder.Resolver[Any, ...]], V]
     @staticmethod
     def function(
-        obj: builder.Resolver[T], containers: Tuple[builder.Resolver[Any], ...], /
+        __obj: builder.Resolver[T], __containers: Tuple[builder.Resolver[Any], ...]
     ) -> V: ...
 
     strict: bool
@@ -223,7 +223,7 @@ class PostGeneration(PostGenerationDeclaration[T, V]):
     # Otherwise it would just be this:
     # function: Callable[[T, bool, Any, ...], V]
     @staticmethod
-    def function(obj: T, create: bool, extracted: Any, /, **kwargs: Any) -> V: ...
+    def function(__obj: T, __create: bool, __extracted: Any, **kwargs: Any) -> V: ...
     def __init__(self, function: Callable[[T, bool, Any], V]) -> None: ...
 
 class RelatedFactory(PostGenerationDeclaration[T, V]):
