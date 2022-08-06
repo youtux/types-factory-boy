@@ -1,4 +1,6 @@
-from typing import Any, Literal
+from typing import Any
+
+from typing_extensions import Literal
 
 BUILD_STRATEGY: Literal["build"]
 CREATE_STRATEGY: Literal["create"]
