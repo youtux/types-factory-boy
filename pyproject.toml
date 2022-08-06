@@ -1,9 +1,22 @@
 [tool.poetry]
 name = "types-factory-boy"
 version = "0.3.0-dev0"
-description = ""
-authors = ["Alessio Bogon <youtux@gmail.com>"]
+description = "Typing stubs for factory-boy"
+license = "MIT"
+authors = ["Alessio Bogon <778703+youtux@users.noreply.github.com>"]
+readme = "README.md"
+repository = "https://github.com/youtux/types-factory-boy"
 packages = [{ include = "factory-stubs", from="src" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Typing :: Stubs Only",
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
