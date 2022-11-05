@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "types-factory-boy"
-version = "0.3.1-dev0"
+version = "0.3.1"
 description = "Typing stubs for factory-boy"
 license = "MIT"
 authors = ["Alessio Bogon <778703+youtux@users.noreply.github.com>"]
