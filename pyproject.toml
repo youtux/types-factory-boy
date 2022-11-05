@@ -6,7 +6,10 @@ license = "MIT"
 authors = ["Alessio Bogon <778703+youtux@users.noreply.github.com>"]
 readme = "README.md"
 repository = "https://github.com/youtux/types-factory-boy"
-packages = [{ include = "factory-stubs", from="src" }]
+packages = [
+    { include = "factory-stubs", from = "src" },
+    { include = "types_factory_boy", from = "src" },
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Operating System :: OS Independent",
