@@ -5,11 +5,15 @@ from typing import Callable
 
 from mypy.nodes import AssignmentStmt, NameExpr, TypeInfo, Var
 from mypy.plugin import ClassDefContext, Plugin
-from mypy.types import Instance, TypeType
+from mypy.types import AnyType, Instance, TypeType
 
 FACTORY_MODEL_FULLNAME = "factory.base.Factory"
 
 logger = logging.getLogger(__name__)
+
+# TODO: Figure out how to invoke mypy so that we get these logs, and then remove this
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler())
 
 
 def plugin(version: str) -> type[Plugin]:
@@ -28,6 +32,26 @@ def transform_factory_model(ctx: ClassDefContext) -> None:
     if not isinstance(_meta.node, TypeInfo):
         return
 
+    bases_to_replace = [
+        base
+        for base in ctx.cls.info.bases
+        if base.type.fullname == FACTORY_MODEL_FULLNAME
+        and isinstance(base.args[0], AnyType)
+    ]
+
+    if bases_to_replace:
+        for base in bases_to_replace:
+            logger.info(
+                "Found base class %s for %s with AnyType. Proceeding.",
+                base,
+                ctx.cls.fullname,
+            )
+    if not bases_to_replace:
+        logger.info(
+            "All bases for %s already parametrized. Skipping.", ctx.cls.fullname
+        )
+        return
+
     model_symbol = _meta.node.names.get("model")
     if model_symbol is None:
         return
@@ -37,34 +61,37 @@ def transform_factory_model(ctx: ClassDefContext) -> None:
     # for stmt in model_symbol.node.defn.defs.body:
     statements = _meta.node.defn.defs.body
     for stmt in statements:
-        if isinstance(stmt, AssignmentStmt):
-            lvalue = stmt.lvalues[0]
-            if not isinstance(lvalue, NameExpr):
-                continue
-            if lvalue.name != "model":
-                continue
-            t = None
-            if stmt.type is not None:
-                if not isinstance(stmt.type, TypeType):
-                    # TODO: log an error
-                    pass
-                else:
-                    t = stmt.type.item
-            if t is None:
-                # TODO: maybe we should instead ask the ctx.api to resolve the type for this statement?
-                # I'm not even sure if this is possible
-                t = ctx.api.named_type(stmt.rvalue.fullname)
-            if t is not None:
-                break
+        if not isinstance(stmt, AssignmentStmt):
+            continue
+
+        lvalue = stmt.lvalues[0]
+        if not isinstance(lvalue, NameExpr):
+            continue
+        if lvalue.name != "model":
+            continue
+        t = None
+        if stmt.type is not None:
+            if not isinstance(stmt.type, TypeType):
+                # TODO: log an error
+                pass
+            else:
+                t = stmt.type.item
+                assert isinstance(t, Instance)
+        if t is None:
+            # TODO: maybe we should instead ask the ctx.api to resolve the type for this statement?
+            # I'm not even sure if this is possible
+            t = ctx.api.named_type(stmt.rvalue.fullname)
+        if t is not None:
+            break
     else:
         return
 
     # now let's set the type var of the class
-    for base in ctx.cls.info.bases:
-        if base.type.fullname == FACTORY_MODEL_FULLNAME:
-            assert isinstance(t, Instance)
-            # TODO: Set it only if not already set
-            base.args = [t]
+    for base in bases_to_replace:
+        logger.info(
+            "Replacing type var for base %s of %s with %s", base, ctx.cls.fullname, t
+        )
+        base.args = [t]
 
     return
 
