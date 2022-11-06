@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from typing import Callable, Optional
+import logging
+from typing import Callable
 
-from mypy.nodes import AssignmentStmt, NameExpr, SymbolTableNode, TypeInfo, Var
+from mypy.nodes import AssignmentStmt, NameExpr, TypeInfo, Var
 from mypy.plugin import ClassDefContext, Plugin
 from mypy.types import Instance, TypeType
 
 FACTORY_MODEL_FULLNAME = "factory.base.Factory"
+
+logger = logging.getLogger(__name__)
 
 
 def plugin(version: str) -> type[Plugin]:
@@ -16,14 +19,8 @@ def plugin(version: str) -> type[Plugin]:
 
 def transform_factory_model(ctx: ClassDefContext) -> None:
     """
-    Configures the BaseModel subclass according to the plugin settings.
-    In particular:
-    * determines the model config and fields,
-    * adds a fields-aware signature for the initializer and construct methods
-    * freezes the class if allow_mutation = False or frozen = True
-    * stores the fields, config, and if the class is settings in the mypy metadata for access by subclasses
+    Configures the Factory subclass.
     """
-    global k
     _meta = ctx.cls.info.names.get("Meta")
     if _meta is None:
         return
