@@ -32,10 +32,13 @@ class ArticleFactory(Factory):
     author = SubFactory(AuthorFactory)
 
 
-a = ArticleFactory.create()
+article = ArticleFactory.create()
 
-reveal_type(a)
+author = AuthorFactory.create()
 
-a.title.split()
-a.content.split()
-a.author.name.split()
+reveal_type(article)
+reveal_type(author)
+
+article.title.split()
+article.content.split()
+article.author.name.split()
