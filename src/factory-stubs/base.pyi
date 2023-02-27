@@ -14,7 +14,7 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import Literal, TypeAlias, Self
 
 from . import builder, declarations, errors
 
@@ -102,7 +102,7 @@ class BaseFactory(Generic[T]):
     UnknownStrategy: Type[errors.UnknownStrategy]
     UnsupportedStrategy: Type[errors.UnsupportedStrategy]
     _meta: FactoryOptions[T]
-    def __new__(cls, *args: Any, **kwargs: Any) -> BaseFactory: ...
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self: ...
     @classmethod
     def reset_sequence(cls, value: int | None = ..., force: bool = ...) -> None: ...
     @classmethod
