@@ -14,7 +14,7 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import Literal, TypeAlias, Self
 
 from . import builder, declarations, errors
 
@@ -32,7 +32,7 @@ def resolve_attribute(
 ) -> Any: ...
 
 class FactoryMetaClass(Generic[T], type):
-    def __call__(cls, **kwargs: Any) -> StubObject | T: ...  # type: ignore[override]
+    def __call__(cls, **kwargs: Any) -> StubObject | T: ...
     def __new__(
         mcs, class_name: str, bases: Tuple[type], attrs: dict[str, Any]
     ) -> type: ...
@@ -102,7 +102,7 @@ class BaseFactory(Generic[T]):
     UnknownStrategy: Type[errors.UnknownStrategy]
     UnsupportedStrategy: Type[errors.UnsupportedStrategy]
     _meta: FactoryOptions[T]
-    def __new__(cls, *args: Any, **kwargs: Any) -> NoReturn: ...  # type: ignore
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self: ...
     @classmethod
     def reset_sequence(cls, value: int | None = ..., force: bool = ...) -> None: ...
     @classmethod

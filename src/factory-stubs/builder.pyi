@@ -1,6 +1,6 @@
 from typing import Any, Generic, Iterable, Iterator, Mapping, NamedTuple, TypeVar
 
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import Literal, TypeAlias, Self
 
 from . import base
 
@@ -14,8 +14,6 @@ class DeclarationWithContext(NamedTuple):
     declaration: Any
     context: dict[str, Any]
 
-TDeclarationSet = TypeVar("TDeclarationSet", bound=DeclarationSet)
-
 class DeclarationSet:
     declarations: dict[str, Any]
     contexts: dict[str, dict[str, Any]]
@@ -24,7 +22,7 @@ class DeclarationSet:
     def split(cls, entry: str) -> tuple[str, str | None]: ...
     @classmethod
     def join(cls, root: str, subkey: str | None) -> str: ...
-    def copy(self) -> TDeclarationSet: ...
+    def copy(self) -> Self: ...
     def update(self, values: Mapping[str, Any]) -> None: ...
     def filter(self, entries: Iterable[str]) -> list[str]: ...
     def sorted(self) -> list[str]: ...

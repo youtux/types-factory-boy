@@ -1,7 +1,7 @@
 import logging
 from types import TracebackType
 from typing import Any, TypeVar, Type, Callable, Hashable, overload
-from typing_extensions import ParamSpec
+from typing_extensions import ParamSpec, Self
 
 from django.db import models
 from django.dispatch.dispatcher import Signal
@@ -32,9 +32,6 @@ class FileField(declarations.BaseDeclaration[Any, File]):
 class ImageField(FileField):
     DEFAULT_FILENAME: str
 
-# Replace this with `Self` once mypy supports it
-mute_signals_T = TypeVar("mute_signals_T", bound=mute_signals)
-
 FactoryTypeT = TypeVar("FactoryTypeT", bound=Type[base.Factory[Any]])
 
 class mute_signals:
@@ -48,7 +45,7 @@ class mute_signals:
         exc_value: BaseException | None,
         tb: TracebackType | None,
     ) -> bool | None: ...
-    def copy(self) -> mute_signals_T: ...
+    def copy(self) -> Self: ...
     @overload
     def __call__(self, callable_obj: FactoryTypeT) -> FactoryTypeT: ...
     @overload
