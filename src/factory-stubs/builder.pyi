@@ -1,6 +1,6 @@
 from typing import Any, Generic, Iterable, Iterator, Mapping, NamedTuple, TypeVar
 
-from typing_extensions import Literal, TypeAlias, Self
+from typing_extensions import Literal, Self, TypeAlias
 
 from . import base
 

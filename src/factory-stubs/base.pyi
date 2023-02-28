@@ -14,7 +14,7 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Literal, TypeAlias, Self
+from typing_extensions import Literal, Self, TypeAlias
 
 from . import builder, declarations, errors
 

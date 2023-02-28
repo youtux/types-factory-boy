@@ -1,11 +1,11 @@
 import logging
 from types import TracebackType
-from typing import Any, TypeVar, Type, Callable, Hashable, overload
-from typing_extensions import ParamSpec, Self
+from typing import Any, Callable, Hashable, Type, TypeVar, overload
 
+from django.core.files import File
 from django.db import models
 from django.dispatch.dispatcher import Signal
-from django.core.files import File
+from typing_extensions import ParamSpec, Self
 
 from . import base, declarations
 
