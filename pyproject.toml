@@ -29,7 +29,7 @@ SQLAlchemy = ">=1.4.36,<3.0.0"
 Django = "^3.2"
 mongoengine = ">=0.24.1,<0.28.0"
 MonkeyType = "^22.2.0"
-tox = "^3.25.1"
+tox = {version = "^4.4.7", python = "<4.0"}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
