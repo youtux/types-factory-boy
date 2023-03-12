@@ -22,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2023-03-12
+
+### Fixed
+
+- Fix type annotation for `Faker.add_provider` (it takes a BaseProvider instance or class) https://github.com/youtux/types-factory-boy/pull/17
+
 ## [0.4.0] - 2023-02-28
 
 ### Fixed
