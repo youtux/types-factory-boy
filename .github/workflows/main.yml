@@ -28,7 +28,7 @@ jobs:
             ignore-typecheck-outcome: false
           - python-version: "3.12.0-dev"
             toxfactor: py312
-            ignore-typecheck-outcome: true
+            ignore-typecheck-outcome: false
 
     steps:
     - uses: actions/checkout@v3
