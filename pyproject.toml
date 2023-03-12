@@ -24,10 +24,10 @@ factory-boy = ">=3.2.0"
 typing-extensions = "^4.2.0"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^0.982"
-SQLAlchemy = "^1.4.36"
+mypy = ">=0.982,<1.1"
+SQLAlchemy = ">=1.4.36,<3.0.0"
 Django = "^3.2"
-mongoengine = "^0.24.1"
+mongoengine = ">=0.24.1,<0.28.0"
 MonkeyType = "^22.2.0"
 tox = "^3.25.1"
 
