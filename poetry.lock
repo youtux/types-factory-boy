@@ -293,19 +293,22 @@ pymongo = ">=3.4,<5.0"
 
 [[package]]
 name = "monkeytype"
-version = "22.2.0"
+version = "23.3.0"
 description = "Generating type annotations from sampled production types"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "MonkeyType-22.2.0-py3-none-any.whl", hash = "sha256:3d0815c7e98a18e9267990a452548247f6775fd636e65df5a7d77100ea7ad282"},
-    {file = "MonkeyType-22.2.0.tar.gz", hash = "sha256:6b0c00b49dcc5095a2c08d28246cf005e05673fc51f64d203f9a6bca2036dfab"},
+    {file = "MonkeyType-23.3.0-py3-none-any.whl", hash = "sha256:38ce8ad6568190f54c334b9fe835608af29b40a33ad448ecae749ae8790cdbf9"},
+    {file = "MonkeyType-23.3.0.tar.gz", hash = "sha256:f2595db34d57cdddbde5a990117a50a22f373dbb917a2a0fa91ffbe07dfe0313"},
 ]
 
 [package.dependencies]
-libcst = ">=0.3.7"
+libcst = ">=0.4.4"
 mypy-extensions = "*"
+
+[package.extras]
+dev = ["black", "flake8", "importlib-metadata", "isort", "libcst", "mypy", "pytest", "sphinx", "tox", "twine"]
 
 [[package]]
 name = "mypy"
@@ -846,4 +849,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.7"
-content-hash = "bc0b72162028abc62d60b64b357d263601acc0e135bc53dcc2a2796ee8950c9e"
+content-hash = "3a399df9badc75c52fc3b7792f7f5ef58f29d28066f284fec7a1e7954e7ed07b"

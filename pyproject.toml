@@ -28,7 +28,7 @@ mypy = ">=0.982,<1.2"
 SQLAlchemy = ">=1.4.36,<3.0.0"
 Django = "^3.2"
 mongoengine = ">=0.24.1,<0.28.0"
-MonkeyType = "^22.2.0"
+MonkeyType = ">=22.2,<24.0"
 tox = "^3.25.1"
 
 [build-system]
