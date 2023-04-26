@@ -47,14 +47,14 @@ jobs:
       run: |
         python -m poetry config virtualenvs.in-project true
 
-    - name: Cache the virtualenv
+    - name: Reuse cached virtualenv, if avaialble
       id: poetry-dependencies-cache
       uses: actions/cache@v3
       with:
         path: ./.venv
         key: ${{ runner.os }}-venv-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    - name: Install dev dependencies
+    - name: Install dev dependencies (unless cached)
       if: steps.poetry-dependencies-cache.outputs.cache-hit != 'true'
       run: |
         python -m poetry install --only=dev
