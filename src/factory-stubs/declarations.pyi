@@ -85,9 +85,9 @@ class Iterator(Generic[S, V], BaseDeclaration[Any, V]):
     iterator_builder: Callable[[], utils.ResetableIterator[S]]
     def __init__(
         self,
-        iterator: typing.Iterable[T],
+        iterator: typing.Iterable[S],
         cycle: bool = ...,
-        getter: Callable[[T], V] | None = ...,
+        getter: Callable[[S], V] | None = ...,
     ): ...
     def reset(self) -> None: ...
 
