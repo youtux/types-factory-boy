@@ -63,6 +63,4 @@ jobs:
       continue-on-error: ${{ matrix.ignore-typecheck-outcome }}
       run: |
         ls -lah .venv/bin/
-        .venv/bin/tox --help || true
-        .venv/bin/tox --version || true
         .venv/bin/tox -f ${{ matrix.toxfactor }} -vvv
