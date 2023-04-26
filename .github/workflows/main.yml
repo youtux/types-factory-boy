@@ -61,7 +61,8 @@ jobs:
 
     - name: Run tox
       continue-on-error: ${{ matrix.ignore-typecheck-outcome }}
-      if: matrix.toxfactor != 'py310'
       run: |
         ls -lah .venv/bin/
+        .venv/bin/tox --help || true
+        .venv/bin/tox --version || true
         .venv/bin/tox -f ${{ matrix.toxfactor }} -vvv
