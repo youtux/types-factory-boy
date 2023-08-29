@@ -29,7 +29,7 @@ mypy = ">=0.982,<1.5"
 SQLAlchemy = ">=1.4.36,<3.0.0"
 Django = "^3.2"
 mongoengine = ">=0.24.1,<0.28.0"
-MonkeyType = "^22.2.0"
+MonkeyType = ">=22.2,<24.0"
 tox = {version = "^4.4.7", python = "<4.0"}
 
 [build-system]
