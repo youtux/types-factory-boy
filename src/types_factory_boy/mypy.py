@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import functools
 import logging
 from typing import Callable
 
+from mypy.errorcodes import ATTR_DEFINED
+from mypy.messages import format_type
 from mypy.nodes import AssignmentStmt, NameExpr, TypeInfo, Var
-from mypy.plugin import ClassDefContext, Plugin
-from mypy.types import AnyType, Instance, TypeType
+from mypy.plugin import AttributeContext, ClassDefContext, Plugin
+from mypy.subtypes import find_member
+from mypy.types import AnyType, Instance, Type, TypeType
 
 FACTORY_MODEL_FULLNAME = "factory.base.Factory"
 
@@ -96,18 +100,54 @@ def transform_factory_model(ctx: ClassDefContext) -> None:
     return
 
 
+def _resolver_attribute(ctx: AttributeContext, *, attr: str) -> Type:
+    # We use 'Any' as the '__getattr__' return value
+    # allow existing attributes to be returned as normal if they are not of type Any.
+    # We can just check against Any because it's not used on any other attribute of the class.
+    # If it was the case, we should improve the check.
+    # TODO: Improve the check so that we can have Any return type on other attributes of the class.
+    if not isinstance(ctx.default_attr_type, AnyType):
+        # We use Any only in the declaration of __missing__ in the Resolver class
+        # so we will use Any as a singleton to check against
+        return ctx.default_attr_type
+    assert isinstance(ctx.type, Instance), ctx.type
+    assert len(ctx.type.args) == 1, ctx.type
+    assert isinstance(ctx.type.args[0], Instance), ctx.type
+    generic_type = ctx.type.args[0]
+    member = find_member(attr, generic_type, generic_type)
+    if member is None:
+        ctx.api.fail(
+            f"{format_type(ctx.type, ctx.api.options)} has no attribute {attr}",
+            ctx.context,
+            code=ATTR_DEFINED,
+        )
+        return ctx.default_attr_type
+    else:
+        return member
+
+
 class TypesFactoryBoyPlugin(Plugin):
-    def get_base_class_hook(
-        self, fullname: str
-    ) -> Callable[[ClassDefContext], None] | None:
-        sym = self.lookup_fully_qualified(fullname)
-        if sym is None or not isinstance(sym.node, TypeInfo):  # pragma: no branch
-            return None
-
-        if any(base.fullname == FACTORY_MODEL_FULLNAME for base in sym.node.mro):
-            return self._factory_model_class_maker_callback
-
+    def get_attribute_hook(
+        self,
+        fullname: str,
+    ) -> Callable[[AttributeContext], Type] | None:
+        # fullname: lazy.Lazy.foo
+        if fullname.startswith("factory.builder.Resolver."):
+            _, _, attr = fullname.rpartition(".")
+            return functools.partial(_resolver_attribute, attr=attr)
         return None
 
-    def _factory_model_class_maker_callback(self, ctx: ClassDefContext) -> None:
-        transform_factory_model(ctx)
+    # def get_base_class_hook(
+    #     self, fullname: str
+    # ) -> Callable[[ClassDefContext], None] | None:
+    #     sym = self.lookup_fully_qualified(fullname)
+    #     if sym is None or not isinstance(sym.node, TypeInfo):  # pragma: no branch
+    #         return None
+    #
+    #     if any(base.fullname == FACTORY_MODEL_FULLNAME for base in sym.node.mro):
+    #         return self._factory_model_class_maker_callback
+    #
+    #     return None
+    #
+    # def _factory_model_class_maker_callback(self, ctx: ClassDefContext) -> None:
+    #     transform_factory_model(ctx)
