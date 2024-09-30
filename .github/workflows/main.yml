@@ -26,8 +26,11 @@ jobs:
           - python-version: "3.11"
             toxfactor: py311
             ignore-typecheck-outcome: false
-          - python-version: "3.12-dev"
+          - python-version: "3.12"
             toxfactor: py312
+            ignore-typecheck-outcome: false
+          - python-version: "3.13"
+            toxfactor: py313
             ignore-typecheck-outcome: false
 
     steps:
