@@ -177,6 +177,7 @@ class StubFactory(Factory[StubObject]):
     class Meta:
         strategy: Literal["stub"]
         model: Type[StubObject]
+
     @classmethod
     def build(cls, **kwargs: Any) -> StubObject: ...
     @classmethod
