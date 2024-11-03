@@ -10,24 +10,23 @@ packages = [{ include = "factory-stubs", from="src" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Typing :: Stubs Only",
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.9"
 factory-boy = ">=3.2.0"
 typing-extensions = "^4.2.0"
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=0.982,<1.5"
+mypy = "*"
 SQLAlchemy = ">=1.4.36,<3.0.0"
-Django = "^3.2"
+Django = "*"
 mongoengine = ">=0.24.1,<0.28.0"
 MonkeyType = ">=22.2,<24.0"
 tox = {version = "^4.4.7", python = "<4.0"}
@@ -37,7 +36,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
+target-version = ['py39', 'py310', 'py311', 'py312', 'py313']
 
 [tool.isort]
 profile = 'black'
