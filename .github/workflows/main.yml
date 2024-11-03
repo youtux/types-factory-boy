@@ -11,12 +11,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - python-version: "3.7"
-            toxfactor: py37
-            ignore-typecheck-outcome: false
-          - python-version: "3.8"
-            toxfactor: py38
-            ignore-typecheck-outcome: false
           - python-version: "3.9"
             toxfactor: py39
             ignore-typecheck-outcome: false
@@ -26,8 +20,11 @@ jobs:
           - python-version: "3.11"
             toxfactor: py311
             ignore-typecheck-outcome: false
-          - python-version: "3.12-dev"
+          - python-version: "3.12"
             toxfactor: py312
+            ignore-typecheck-outcome: false
+          - python-version: "3.13"
+            toxfactor: py313
             ignore-typecheck-outcome: false
 
     steps:
