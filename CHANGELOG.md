@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Dropped support for python 3.7 and 3.8. Supported python versions: 3.9, 3.10, 3.11, 3.12, 3.13
+
 ## [0.4.1] - 2023-03-12
 
 ### Fixed
