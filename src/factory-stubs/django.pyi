@@ -26,6 +26,11 @@ class DjangoModelFactory(base.Factory[TModel]):
     class Meta:
         abstract: bool
 
+class Password(declarations.Transformer[Any, str]):
+    def __init__(
+        self, password: str, transform: Callable[[str], str] = ..., **kwargs: Any
+    ) -> None: ...
+
 class FileField(declarations.BaseDeclaration[Any, File]):
     DEFAULT_FILENAME: str
 
