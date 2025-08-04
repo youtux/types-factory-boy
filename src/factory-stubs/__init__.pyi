@@ -25,6 +25,7 @@ from .declarations import SelfAttribute as SelfAttribute
 from .declarations import Sequence as Sequence
 from .declarations import SubFactory as SubFactory
 from .declarations import Trait as Trait
+from .declarations import Transformer as Transformer
 from .enums import BUILD_STRATEGY as BUILD_STRATEGY
 from .enums import CREATE_STRATEGY as CREATE_STRATEGY
 from .enums import STUB_STRATEGY as STUB_STRATEGY
