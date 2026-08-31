@@ -1,23 +1,23 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
--   repo: https://github.com/psf/black
-    rev: 1b2427a2b785cc4aac97c19bb4b9a0de063f9547  # frozen: 24.10.0
+-   repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 4160603246a6b365d4a2af661c6d71b0a0f50478  # frozen: 26.5.1
     hooks:
     - id: black
 -   repo: https://github.com/pycqa/isort
-    rev: c235f5e450b4b84e58d114ed4c589cbf454175a3  # frozen: 5.13.2
+    rev: 131f4adcd5582bfc53928ab0d740eceb8b506b6c  # frozen: 9.0.1
     hooks:
     -   id: isort
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # frozen: v5.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
 -   repo: https://github.com/asottile/pyupgrade
-    rev: 19364aa1b2ac289ce75e6bbe93994f7b4b9425f6  # frozen: v3.19.0
+    rev: 75992aaa40730136014f34227e0135f63fc951b4  # frozen: v3.21.2
     hooks:
     -   id: pyupgrade
         args: [--py39-plus]
